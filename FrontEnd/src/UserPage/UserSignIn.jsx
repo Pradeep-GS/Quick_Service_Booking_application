@@ -46,7 +46,12 @@ const UserSignIn = () => {
             return;
         }
         alert(`Name : ${form.name}\nEmail: ${form.email}\nPassword: ${form.pass}\nMobile: ${form.phone}`);
-        navigate("/user/profilesetup")
+        navigate("/user/profilesetup",{state:{
+            name:form.name,
+            email:form.email,
+            password:form.pass,
+            phone:form.phone
+        }})
     };
   return (
      <div className="container sm:p-10 lg:w-[70%] h-[70vh] mx-auto lg:grid lg:grid-cols-2 mt-[5%]">

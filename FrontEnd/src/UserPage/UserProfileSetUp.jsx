@@ -1,5 +1,5 @@
 import{ useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 const UserProfileSetUp = () => {
   const countries = [
@@ -200,7 +200,9 @@ const UserProfileSetUp = () => {
   "Zimbabwe"
 ]
   const[country,setcountry]=useState("")
+  const locate = useLocation()
   const navigate =useNavigate()
+  const {name,email,password,phone}=locate.state
   const verify =(e)=>{
     e.preventDefault()
     navigate("/user/dashboard")
@@ -213,7 +215,7 @@ const UserProfileSetUp = () => {
                 <div className="h-full p-2">
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="name" >Your Name</label>
-                    <input type="text" name="name" id='name' placeholder='Enter Your Name' required className='w-[100%] border-[1px] p-1 outline-none' />
+                    <input type="text" name="name" id='name' value={locate.state.name} placeholder='Enter Your Name' required className='w-[100%] border-[1px] p-1 outline-none' />
                   </div>
                   <div className='w-full p-1 mt-5 grid grid-cols-2 gap-3'>
                     <div>
@@ -227,18 +229,18 @@ const UserProfileSetUp = () => {
                   </div>
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="mail" >Your E-Mail Id</label>
-                    <input type="email" name="mail" id='mail' placeholder='Enter Your Mail Id' required className='w-[100%] border-[1px] p-1 outline-none' />
+                    <input type="email" name="mail" id='mail' value={locate.state.email} placeholder='Enter Your Mail Id' required className='w-[100%] border-[1px] p-1 outline-none' />
                   </div>
 
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="password" >Your Password</label>
-                    <input type="password" name="password" id='password' placeholder='Enter Your Password' required className='w-[100%] border-[1px] p-1 outline-none' />
+                    <input type="password" name="password" value={locate.state.password}  id='password' placeholder='Enter Your Password' required className='w-[100%] border-[1px] p-1 outline-none' />
                     <Link className='text-[var(--primary--color)] font-extrabold mt-[20px] text-[13px]'>Forget Password?</Link>
                   </div>
 
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="mobile" >Your Mobile Number</label>
-                    <input type="text" name="mobile" id='mobile' placeholder='Enter Your Mobile Number' required className='w-[100%] border-[1px] p-1 outline-none' />
+                    <input type="text" name="mobile" id='mobile' value={locate.state.phone} placeholder='Enter Your Mobile Number' required className='w-[100%] border-[1px] p-1 outline-none' />
                   </div>
                 </div>
                 <div className="h-full  p-2">
