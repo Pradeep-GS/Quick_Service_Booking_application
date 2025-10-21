@@ -199,13 +199,46 @@ const UserProfileSetUp = () => {
   "Zambia",
   "Zimbabwe"
 ]
-  const[country,setcountry]=useState("")
   const locate = useLocation()
   const navigate =useNavigate()
   const {name,email,password,phone}=locate.state
   const verify =(e)=>{
     e.preventDefault()
+    alert(`Name: ${form.name}
+          DOB: ${form.dob}
+          Age: ${form.age}
+          Email: ${form.mail}
+          Password: ${form.password}
+          Mobile: ${form.mobile}
+          Address: ${form.address}
+          Pincode: ${form.pincode}
+          District: ${form.district}
+          State: ${form.state}
+          Country: ${form.country}\n`);
     navigate("/user/dashboard")
+  }
+  const[form,setform]=useState({
+    name:locate.state.name,
+    dob:"",
+    age:"",
+    mail:locate.state.email,
+    password:locate.state.password,
+    mobile:locate.state.phone,
+    address:"",
+    pincode:"",
+    district:"",
+    state:"",
+    country:"",
+  })
+const agecalci = (e)=>{
+  const dob = e.target.value;
+  const bdate =dob.split("-")[0]
+  const date = new Date().getFullYear()
+  const age = date-bdate
+  setform({...form,dob:dob,age:age})
+}
+  const change = (e)=>{
+    setform({...form,[e.target.name]:e.target.value})
   }
   return (
     <div className='w-full h-[100vh] bg-[var(--primary--color)] flex items-center justify-center'>
@@ -215,38 +248,38 @@ const UserProfileSetUp = () => {
                 <div className="h-full p-2">
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="name" >Your Name</label>
-                    <input type="text" name="name" id='name' value={locate.state.name} placeholder='Enter Your Name' required className='w-[100%] border-[1px] p-1 outline-none' />
+                    <input type="text" name="name" id='name' value={form.name} placeholder='Enter Your Name' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off" />
                   </div>
                   <div className='w-full p-1 mt-5 grid grid-cols-2 gap-3'>
                     <div>
                       <label htmlFor="dob">Date OF Birth</label>
-                      <input type="date" name="dob" id="dob" className='border-[1px] w-full p-1' required/>
+                      <input type="date" name="dob" id="dob" className='border-[1px] w-full p-1' required onChange={agecalci} autoComplete="off"/>
                     </div>
                      <div>
                       <label htmlFor="dob">Your Age</label>
-                      <input type="text" name="dob" id="dob" className='border-[1px] w-full p-1' placeholder='Enter Your Age'required/>
+                      <input type="text" name="age" id="age" className='border-[1px] w-full p-1' value={form.age} placeholder='Enter Your Age'required  autoComplete="off" readOnly/>
                     </div>
                   </div>
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="mail" >Your E-Mail Id</label>
-                    <input type="email" name="mail" id='mail' value={locate.state.email} placeholder='Enter Your Mail Id' required className='w-[100%] border-[1px] p-1 outline-none' />
+                    <input type="email" name="mail" id='mail' value={form.mail} placeholder='Enter Your Mail Id' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off"/>
                   </div>
 
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="password" >Your Password</label>
-                    <input type="password" name="password" value={locate.state.password}  id='password' placeholder='Enter Your Password' required className='w-[100%] border-[1px] p-1 outline-none' />
+                    <input type="password" name="password" value={form.password}  id='password' placeholder='Enter Your Password' required className='w-[100%] border-[1px] p-1 outline-none'onChange={change} autoComplete="off"/>
                     <Link className='text-[var(--primary--color)] font-extrabold mt-[20px] text-[13px]'>Forget Password?</Link>
                   </div>
 
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="mobile" >Your Mobile Number</label>
-                    <input type="text" name="mobile" id='mobile' value={locate.state.phone} placeholder='Enter Your Mobile Number' required className='w-[100%] border-[1px] p-1 outline-none' />
+                    <input type="text" name="mobile" id='mobile' value={form.phone} placeholder='Enter Your Mobile Number' required className='w-[100%] border-[1px] p-1 outline-none'onChange={change}autoComplete="off" />
                   </div>
                 </div>
                 <div className="h-full  p-2">
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="country mt-5" >Selet Your Coutry</label>
-                      <select className='mx-5 border-[1px] outline-none p-1 mt-5'  onChange={(e)=>{setcountry(e.target.value)}}>
+                      <select className='mx-5 border-[1px] outline-none p-1 mt-5' name='country' onChange={change}>
                         <optgroup label="Select Your Country">
                           {countries.map((name, index) => (
                             <option key={index} value={name} className=''>
@@ -258,19 +291,19 @@ const UserProfileSetUp = () => {
                   </div>
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="address" >Your Address</label>
-                    <textarea rows="5" type="address" name="address" id='address' placeholder='Enter Your Address' required className='w-[100%] border-[1px] p-1 outline-none' />
+                    <textarea rows="5" type="address" name="address" id='address' placeholder='Enter Your Address' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off"/>
                     <div className='w-full  grid grid-cols-2'>
                       <div className='w-full p-1 mt-5'>
                           <label htmlFor="pincode">Your Pincode</label>
-                          <input type="text" name="pincode" id='pincode' placeholder='Enter Your Pincode' required className='w-[100%] border-[1px] p-[2px] outline-none' />
+                          <input type="text" name="pincode" id='pincode' placeholder='Enter Your Pincode' required className='w-[100%] border-[1px] p-[2px] outline-none'onChange={change} autoComplete="off"/>
                       </div>
                       <div className='w-full p-1 mt-5'>
                           <label htmlFor="district">Your District</label>
-                          <input type="text" name="district" id='district' placeholder='Enter Your District' required className='w-[100%] border-[1px] p-[2px] outline-none' />
+                          <input type="text" name="district" id='district' placeholder='Enter Your District' required className='w-[100%] border-[1px] p-[2px] outline-none'onChange={change} autoComplete="off" />
                       </div>
                       <div className='w-full p-1 mt-5'>
                           <label htmlFor="state">Your State</label>
-                          <input type="text" name="state" id='state' placeholder='Enter Your State' required className='w-[100%] border-[1px] p-[2px] outline-none' />
+                          <input type="text" name="state" id='state' placeholder='Enter Your State' required className='w-[100%] border-[1px] p-[2px] outline-none'onChange={change} autoComplete="off"/>
                       </div>
                     </div>
                       <button className='w-full mt-5 bg-[var(--primary--color)] px-2 py-2 text-white' onClick={verify}>Update The Changes</button>
