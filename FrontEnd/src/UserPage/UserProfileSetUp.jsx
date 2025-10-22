@@ -218,17 +218,17 @@ const UserProfileSetUp = () => {
     navigate("/user/dashboard")
   }
   const[form,setform]=useState({
-    name:locate.state.name,
+    userName:locate.state.name,
+    mailID:locate.state.email,
+    password:locate.state.password,
+    mobileNumber:locate.state.phone,
     dob:"",
     age:"",
-    mail:locate.state.email,
-    password:locate.state.password,
-    mobile:locate.state.phone,
+    country:"",
     address:"",
     pincode:"",
     district:"",
     state:"",
-    country:"",
   })
 const agecalci = (e)=>{
   const dob = e.target.value;
@@ -248,7 +248,7 @@ const agecalci = (e)=>{
                 <div className="h-full p-2">
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="name" >Your Name</label>
-                    <input type="text" name="name" id='name' value={form.name} placeholder='Enter Your Name' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off" />
+                    <input type="text" name="name" id='name' value={form.userName} placeholder='Enter Your Name' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off" />
                   </div>
                   <div className='w-full p-1 mt-5 grid grid-cols-2 gap-3'>
                     <div>
@@ -262,7 +262,7 @@ const agecalci = (e)=>{
                   </div>
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="mail" >Your E-Mail Id</label>
-                    <input type="email" name="mail" id='mail' value={form.mail} placeholder='Enter Your Mail Id' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off"/>
+                    <input type="email" name="mail" id='mail' value={form.mailID} placeholder='Enter Your Mail Id' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off"/>
                   </div>
 
                   <div className='w-full p-1 mt-5'>
@@ -273,14 +273,17 @@ const agecalci = (e)=>{
 
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="mobile" >Your Mobile Number</label>
-                    <input type="text" name="mobile" id='mobile' value={form.phone} placeholder='Enter Your Mobile Number' required className='w-[100%] border-[1px] p-1 outline-none'onChange={change}autoComplete="off" />
+                    <input type="text" name="mobile" id='mobile' value={form.mobileNumber} placeholder='Enter Your Mobile Number' required className='w-[100%] border-[1px] p-1 outline-none'onChange={change}autoComplete="off" />
                   </div>
                 </div>
                 <div className="h-full  p-2">
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="country mt-5" >Selet Your Coutry</label>
-                      <select className='mx-5 border-[1px] outline-none p-1 mt-5' name='country' onChange={change}>
-                        <optgroup label="Select Your Country">
+                      <select className='mx-5 border-[1px] outline-none p-1 mt-5' name='country' onChange={change} placeholder='Select Your Country' value={form.country}>
+                        <optgroup label="Select Your Country" placeholder='Select Your Country'>
+                            <option value="" disabled>
+                                Select Your Country
+                            </option>
                           {countries.map((name, index) => (
                             <option key={index} value={name} className=''>
                               {name}
