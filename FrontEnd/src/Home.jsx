@@ -15,7 +15,7 @@ const Home = () => {
 
             <div className='mt-10 mx-auto flex justify-center gap-4'>
                 <Link to={"/user/login"} className=' outline-none px-4 py-2 bg-[var(--primary--color)] text-white hover:text-[var(--primary--color)] hover:bg-white hover:border-[1px] '>Log In As Customer</Link>
-                <Link to={"/servic/login"} className='border-[1px] outline-none px-4 py-2 text-[var(--primary--color)] bg-white hover:bg-[var(--primary--color)] hover:text-white'>Log In As Servicer</Link>
+                <Link to={"/service/login"} className='border-[1px] outline-none px-4 py-2 text-[var(--primary--color)] bg-white hover:bg-[var(--primary--color)] hover:text-white'>Log In As Servicer</Link>
             </div>
         </div>
     </div>
