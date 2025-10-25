@@ -23,7 +23,7 @@ const ServiceLogin = () => {
         }
     }
   return (
-    <div className="container sm:p-10 lg:w-[70%] h-[70vh] mx-auto lg:grid lg:grid-cols-2 mt-[5%]">
+    <div className="container sm:p-10 lg:w-[60%] h-[70vh] mx-auto lg:grid lg:grid-cols-2 mt-[5%]">
         <div className="form border-[1px]  flex flex-col justify-center">
             <h1 className="text-center text-5xl text-[var(--primary--color)] my-10 ">LOG IN</h1>
             <div className="form w-[80%] mx-auto">
