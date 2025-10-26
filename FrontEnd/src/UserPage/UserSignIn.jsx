@@ -2,7 +2,7 @@ import { useState } from 'react'
 import login_img from'../assets/login.png'
 import { FaEye,FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from 'react-router-dom';
-
+import axios from 'axios';
 const UserSignIn = () => {
     const[view,setview]=useState(true)
     const [isValid, setIsValid] = useState(null);
@@ -37,22 +37,41 @@ const UserSignIn = () => {
         setIsValid(verify(value));
         }
     }
-    const display = (e) => {
-        e.preventDefault();
-        const error = ErrorMessage(form.pass)
-        if(error!=null)
-        {
-            alert(error);
-            return;
+    const display = async (e) => {
+    e.preventDefault();
+
+    const error = ErrorMessage(form.pass);
+    if (error != null) {
+        alert(error);
+        return;
+    }
+
+    try {
+        const res = await axios.post("http://localhost:8080/user/search", {
+            mailId: form.email,
+            mobileNumber: form.phone
+        });
+
+        const result = res.data;
+
+        if (result.success) {
+            alert(result.message); 
+        } else {
+            navigate("/user/profilesetup", {
+                state: {
+                    name: form.name,
+                    email: form.email,
+                    password: form.pass,
+                    phone: form.phone
+                }
+            });
         }
-        alert(`Name : ${form.name}\nEmail: ${form.email}\nPassword: ${form.pass}\nMobile: ${form.phone}`);
-        navigate("/user/profilesetup",{state:{
-            name:form.name,
-            email:form.email,
-            password:form.pass,
-            phone:form.phone
-        }})
-    };
+    } catch (err) {
+        console.error("Error while processing:", err);
+        alert("Something went wrong while checking the user");
+    }
+};
+
   return (
      <div className="container sm:p-10 lg:w-[70%] h-[70vh] mx-auto lg:grid lg:grid-cols-2 mt-[5%]">
             <div className="form border-[1px]  flex flex-col justify-center">

@@ -6,6 +6,7 @@ import UserDashBoard from './UserPage/UserDashBoard';
 import UserProfileSetUp from './UserPage/UserProfileSetUp';
 import ServiceLogin from './ServiceProvider/ServiceLogin';
 import ServiceSignin from './ServiceProvider/ServiceSignin';
+import ServiceProfilesetup from './ServiceProvider/ServiceProfilesetup';
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
   {
     path:"/service/sigin",
     element:<ServiceSignin/>
+  },
+  {
+    path:"/service/profilesetup",
+    element:<ServiceProfilesetup/>
   }
 ]);
 

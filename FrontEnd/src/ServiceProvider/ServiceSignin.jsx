@@ -46,7 +46,7 @@ const ServiceSignin = () => {
             return;
         }
         alert(`Name : ${form.name}\nEmail: ${form.email}\nPassword: ${form.pass}\nMobile: ${form.phone}`);
-        navigate("/user/profilesetup",{state:{
+        navigate("/service/profilesetup",{state:{
             name:form.name,
             email:form.email,
             password:form.pass,
