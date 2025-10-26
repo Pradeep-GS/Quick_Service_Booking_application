@@ -1,5 +1,6 @@
 import{ useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import axios from 'axios';
 
 const UserProfileSetUp = () => {
   const countries = [
@@ -202,21 +203,35 @@ const UserProfileSetUp = () => {
   const locate = useLocation()
   const navigate =useNavigate()
   const {name,email,password,phone}=locate.state
-  const verify =(e)=>{
-    e.preventDefault()
-    alert(`Name: ${form.name}
-          DOB: ${form.dob}
-          Age: ${form.age}
-          Email: ${form.mail}
-          Password: ${form.password}
-          Mobile: ${form.mobile}
-          Address: ${form.address}
-          Pincode: ${form.pincode}
-          District: ${form.district}
-          State: ${form.state}
-          Country: ${form.country}\n`);
-    navigate("/user/dashboard")
+ const verify = async (e) => {
+  e.preventDefault();
+
+  const formData = {
+    ...form,
+    age: Number(form.age) || 0,
+    pincode: Number(form.pincode) || 0
+  };
+
+  console.log("Sending JSON:", formData);
+
+  try {
+    const response = await axios.post(
+      "http://localhost:8080/user/createuser",
+      formData,
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    if (response.data.success) {
+      navigate("/user/dashboard");
+    } else {
+      alert("Already exists");
+    }
+  } catch (error) {
+    console.error("Axios error:", error.response?.data || error);
+    alert("Error While Processing");
   }
+};
+
   const[form,setform]=useState({
     userName:locate.state.name,
     mailID:locate.state.email,
@@ -248,7 +263,7 @@ const agecalci = (e)=>{
                 <div className="h-full p-2">
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="name" >Your Name</label>
-                    <input type="text" name="name" id='name' value={form.userName} placeholder='Enter Your Name' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off" />
+                    <input type="text" name="userName" id='name' value={form.userName} placeholder='Enter Your Name' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off" />
                   </div>
                   <div className='w-full p-1 mt-5 grid grid-cols-2 gap-3'>
                     <div>
@@ -262,7 +277,7 @@ const agecalci = (e)=>{
                   </div>
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="mail" >Your E-Mail Id</label>
-                    <input type="email" name="mail" id='mail' value={form.mailID} placeholder='Enter Your Mail Id' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off"/>
+                    <input type="email" name="mailID" id='mail' value={form.mailID} placeholder='Enter Your Mail Id' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off"/>
                   </div>
 
                   <div className='w-full p-1 mt-5'>
@@ -273,7 +288,7 @@ const agecalci = (e)=>{
 
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="mobile" >Your Mobile Number</label>
-                    <input type="text" name="mobile" id='mobile' value={form.mobileNumber} placeholder='Enter Your Mobile Number' required className='w-[100%] border-[1px] p-1 outline-none'onChange={change}autoComplete="off" />
+                    <input type="text" name="mobileNumber" id='mobile' value={form.mobileNumber} placeholder='Enter Your Mobile Number' required className='w-[100%] border-[1px] p-1 outline-none'onChange={change}autoComplete="off" />
                   </div>
                 </div>
                 <div className="h-full  p-2">
