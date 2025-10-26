@@ -1,4 +1,5 @@
-import{ useState } from 'react'
+import axios from 'axios'
+import{ useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 const ServiceProfilesetup = () => {
@@ -198,26 +199,23 @@ const ServiceProfilesetup = () => {
   "Yemen",
   "Zambia",
   "Zimbabwe"
-]
-  const locate = useLocation()
-  const navigate =useNavigate()
-  const {name,email,password,phone}=locate.state
-  const verify =(e)=>{
-    e.preventDefault()
-    alert(`Name: ${form.name}
-          DOB: ${form.dob}
-          Age: ${form.age}
-          Email: ${form.mail}
-          Password: ${form.password}
-          Mobile: ${form.mobile}
-          Address: ${form.address}
-          Pincode: ${form.pincode}
-          District: ${form.district}
-          State: ${form.state}
-          Country: ${form.country}\n`);
-    navigate("/user/dashboard")
+  ]
+  const [categories, setCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+
+useEffect(() => {
+  async function fetchCategories() {
+    try {
+      const res = await axios.get("http://localhost:8080/service/getcat");
+      setCategories(res.data);
+    } catch (err) {
+      console.error(err);
+    }
   }
-  const[form,setform]=useState({
+  fetchCategories();
+}, []);
+const locate = useLocation()
+const[form,setform]=useState({
     userName:locate.state.name,
     mailID:locate.state.email,
     password:locate.state.password,
@@ -229,14 +227,64 @@ const ServiceProfilesetup = () => {
     pincode:"",
     district:"",
     state:"",
+    gender:"",
+    exp:"",
+    package:""
   })
-const agecalci = (e)=>{
+const formDataToSend = {
+  name: form.userName,
+  email: form.mailID,
+  password: form.password,
+  mobileNumber: form.mobileNumber,
+  gender: form.gender,
+  serviceProviding: selectedCategories.map(id => ({ categoryId: parseInt(id) })),
+  yearOfExperience: parseInt(form.exp),
+  salaryPerHr: parseFloat(form.package),
+  dob: form.dob,
+  age: parseInt(form.age),
+  country: form.country,
+  address: form.address,
+  pincode: form.pincode,
+  district: form.district,
+  state: form.state
+};
+
+  
+  const navigate =useNavigate()
+  const {name,email,password,phone}=locate.state
+  const verify =async(e)=>{
+    e.preventDefault()
+    try{
+      const response = await axios.post("http://localhost:8080/service/sigup",formDataToSend);
+      const result = response.data;
+
+      if(result.success)
+      {
+        navigate("/user/dashboard")
+      }
+      else{
+        alert("Some error")
+      }
+    }
+    catch(e)
+    {
+      console.log(e);
+    }
+  }
+  
+const agecalci = (e) => {
   const dob = e.target.value;
-  const bdate =dob.split("-")[0]
-  const date = new Date().getFullYear()
-  const age = date-bdate
-  setform({...form,dob:dob,age:age})
-}
+  if (!dob) return;
+  const birthDate = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const m = today.getMonth() - birthDate.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  setform({ ...form, dob: dob, age: age });
+};
+
   const change = (e)=>{
     setform({...form,[e.target.name]:e.target.value})
   }
@@ -248,7 +296,7 @@ const agecalci = (e)=>{
                 <div className="h-full p-2">
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="name" >Your Name</label>
-                    <input type="text" name="name" id='name' value={form.userName} placeholder='Enter Your Name' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off" />
+                    <input type="text" name="userName" id='userName' value={form.userName} placeholder='Enter Your Name' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off" />
                   </div>
                   <div className='w-full p-1 mt-5 grid grid-cols-2 gap-3'>
                     <div>
@@ -260,9 +308,19 @@ const agecalci = (e)=>{
                       <input type="text" name="age" id="age" className='border-[1px] w-full p-1' value={form.age} placeholder='Enter Your Age'required  autoComplete="off" readOnly/>
                     </div>
                   </div>
+                  <div className='mt-5 flex gap-1 p-1 items-center'>
+                  <label>Gender:</label>
+                  <select name="gender" onChange={change} value={form.gender} className='border-2 p-1'>
+                    <option value="" disabled>Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
                   <div className='w-full p-1 mt-5'>
-                    <label htmlFor="mail" >Your E-Mail Id</label>
-                    <input type="email" name="mail" id='mail' value={form.mailID} placeholder='Enter Your Mail Id' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off"/>
+                    <label htmlFor="mailID" >Your E-Mail Id</label>
+                    <input type="email" name="mailID" id='mailID' value={form.mailID} placeholder='Enter Your Mail Id' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off"/>
                   </div>
 
                   <div className='w-full p-1 mt-5'>
@@ -273,16 +331,44 @@ const agecalci = (e)=>{
 
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="mobile" >Your Mobile Number</label>
-                    <input type="text" name="mobile" id='mobile' value={form.mobileNumber} placeholder='Enter Your Mobile Number' required className='w-[100%] border-[1px] p-1 outline-none'onChange={change}autoComplete="off" />
+                    <input type="text" name="mobileNumber" id='mobileNumber' value={form.mobileNumber} placeholder='Enter Your Mobile Number' required className='w-[100%] border-[1px] p-1 outline-none'onChange={change}autoComplete="off" />
                   </div>
 
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="mobile" >Select Your Service Providing</label><br />
-                        <input type="checkbox" value={"plumber"}/> plumber <br />
-                  </div>
+                        <div className='flex gap-3'>
+                          {categories.map((cat) => (
+                              <div key={cat.categoryId} className='flex gap-3'>
+                                <label>
+                                  <input type="checkbox" value={cat.categoryId} checked={selectedCategories.includes(cat.categoryId)} onChange={(e) => { 
+                                    const id = cat.categoryId;
+                                      if (e.target.checked) {
+                                        setSelectedCategories([...selectedCategories, id]);
+                                      } else {
+                                        setSelectedCategories(selectedCategories.filter((c) => c !== id));
+                                      }
+                                    }}
+                                  />
+                                  {cat.categoryName}
+                                </label>
+                              </div>
+                             ))}
 
+                        </div>
+                  </div>
+                    
                 </div>
                 <div className="h-full  p-2">
+                  <div className='w-full  grid grid-cols-2'>
+                      <div className='w-full p-1 mt-5'>
+                        <label htmlFor="exp" >Year Of Experience</label>
+                        <input type="number" name="exp" id='exp' onChange={change} placeholder='Enter Your Year Of Experience' required className='w-[100%] border-[1px] p-1 outline-none'autoComplete="off" />
+                      </div>
+                      <div className='w-full p-1 mt-5'>
+                        <label htmlFor="package" >Your Package In Hrs</label>
+                        <input type="number" step="0.01" name="package" id='package' onChange={change} placeholder='Enter Your Your Package In Hrs' required className='w-[100%] border-[1px] p-1 outline-none'autoComplete="off" />
+                      </div>
+                    </div>
                   <div className='w-full p-1 mt-5'>
                     <label htmlFor="country mt-5" >Selet Your Coutry</label>
                       <select className='mx-5 border-[1px] outline-none p-1 mt-5' name='country' onChange={change} placeholder='Select Your Country' value={form.country}>
