@@ -2,6 +2,7 @@ import { useState } from 'react'
 import login_img from'../assets/login.png'
 import { FaEye,FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate} from 'react-router-dom';
+import axios from 'axios';
 const UserLogin = () => {
     const[view,setview]=useState(true)
     const[email,setemail]=useState("")
@@ -9,17 +10,29 @@ const UserLogin = () => {
 
    const navigate=useNavigate();
 
-    const login=(e)=>
+    const login= async(e)=>
     {
         e.preventDefault()
-        if((email=="gspradeep9500@gmail.com" || email=="pradeep") && pass== "9500")
-        {
-            alert("Log In SucessFully")
-            navigate("/user/dashboard")
+        try{
+            const response = await axios.post("http://localhost:8080/user/login",{
+            mailID:email,
+            password:pass
+            });
+            const res = response.data
+
+            if(res.success)
+            {
+                alert(res.message)
+                navigate("/user/dashboard")
+            }
+            else{
+                alert(res.message)
+                navigate("/user/signup")
+            }
         }
-        else
+        catch(e)
         {
-            alert(`mail: ${email} \n pass:${pass}`)
+            console.error(e);
         }
     }
   return (
@@ -29,7 +42,7 @@ const UserLogin = () => {
             <div className="form w-[80%] mx-auto">
                 <form onSubmit={login} className="mx-auto"> 
                     <div className="mail border-[1px] w-full h-10">
-                        <input type="text" id="email" placeholder="Enter Your Email / UserName"className="w-full h-10 p-1 outline-none" onChange={(e)=>setemail(e.target.value)}/>
+                        <input type="text" id="email" placeholder="Enter Your Email"className="w-full h-10 p-1 outline-none" onChange={(e)=>setemail(e.target.value)}/>
                     </div>
                     <div className="pass border-[1px] w-full mt-10 h-10 flex">
                         <input type={view?"password":"text"} id="password" placeholder="Enter Your Password" name="pass" className="w-[100%] h-10 p-1 outline-none"  onChange={(e)=>setpass(e.target.value)} />
