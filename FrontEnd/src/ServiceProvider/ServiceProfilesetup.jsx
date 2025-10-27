@@ -289,8 +289,8 @@ const agecalci = (e) => {
     setform({...form,[e.target.name]:e.target.value})
   }
   return (
-    <div className='w-full h-[100vh] bg-[var(--primary--color)] flex items-center justify-center'>
-        <div className="container w-[90%] h-[90vh] bg-white p-5 rounded-2xl overflow-hidden">
+    <div className='w-full  bg-[var(--primary--color)] flex items-center justify-center p-6'>
+        <div className="container w-[90%] h-[100vh] bg-white p-5 rounded-2xl overflow-hidden">
             <h3 className='text-center text-4xl text-[var(--primary--color)] mt-2'>Profile Setup</h3>
             <div className='container w-full max-h-fit grid grid-cols-2 gap-2 mt-5'>
                 <div className="h-full p-2">
