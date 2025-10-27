@@ -2,6 +2,7 @@ import { useState } from 'react'
 import login_img from'../assets/service_login.png'
 import { FaEye,FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate} from 'react-router-dom';
+import axios from 'axios';
 const ServiceLogin = () => {
     const[view,setview]=useState(true)
     const[email,setemail]=useState("")
@@ -9,17 +10,26 @@ const ServiceLogin = () => {
 
    const navigate=useNavigate();
 
-    const login=(e)=>
+    const login=async(e)=>
     {
         e.preventDefault()
-        if((email=="gspradeep9500@gmail.com" || email=="pradeep") && pass== "9500")
-        {
-            alert("Log In SucessFully")
-            navigate("/user/dashboard")
+
+        try{
+            const response = await axios.post("http://localhost:8080/service/login",{
+                email:email,
+                password:pass,
+            });
+            const res = response.data;
+
+            if(res.success)
+            {
+                navigate("/user/dashboard");
+                alert(res.message)
+            }
         }
-        else
+        catch(e)
         {
-            alert(`mail: ${email} \n pass:${pass}`)
+            console.log(e);
         }
     }
   return (
