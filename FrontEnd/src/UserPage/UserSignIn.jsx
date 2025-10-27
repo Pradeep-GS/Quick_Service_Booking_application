@@ -56,6 +56,7 @@ const UserSignIn = () => {
 
         if (result.success) {
             alert(result.message); 
+            navigate("/user/login")
         } else {
             navigate("/user/profilesetup", {
                 state: {

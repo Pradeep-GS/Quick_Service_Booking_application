@@ -26,6 +26,10 @@ const ServiceLogin = () => {
                 navigate("/user/dashboard");
                 alert(res.message)
             }
+            else{
+                alert(res.message)
+                navigate("/service/sigin");
+            }
         }
         catch(e)
         {

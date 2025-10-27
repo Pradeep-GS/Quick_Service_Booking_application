@@ -56,6 +56,7 @@ const ServiceSignin = () => {
             if(res.success)
             {
                 alert(res.message)
+                navigate("/service/login")
             }
             else{
                 navigate("/service/profilesetup",{state:{
