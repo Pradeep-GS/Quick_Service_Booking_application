@@ -2,6 +2,7 @@ import { useState } from 'react'
 import login_img from'../assets/service_login.png'
 import { FaEye,FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios'
 
 const ServiceSignin = () => {
     const[view,setview]=useState(true)
@@ -37,7 +38,7 @@ const ServiceSignin = () => {
         setIsValid(verify(value));
         }
     }
-    const display = (e) => {
+    const display = async (e) => {
         e.preventDefault();
         const error = ErrorMessage(form.pass)
         if(error!=null)
@@ -45,13 +46,29 @@ const ServiceSignin = () => {
             alert(error);
             return;
         }
-        alert(`Name : ${form.name}\nEmail: ${form.email}\nPassword: ${form.pass}\nMobile: ${form.phone}`);
-        navigate("/service/profilesetup",{state:{
-            name:form.name,
-            email:form.email,
-            password:form.pass,
-            phone:form.phone
-        }})
+        try{
+            const response = await axios.post("http://localhost:8080/service/check",{
+                email:form.email,
+                mobileNumber:form.phone
+            });
+            const res = response.data;
+
+            if(res.success)
+            {
+                alert(res.message)
+            }
+            else{
+                navigate("/service/profilesetup",{state:{
+                            name:form.name,
+                            email:form.email,
+                            password:form.pass,
+                            phone:form.phone
+                        }})
+            }
+        }
+        catch(e){
+            console.log(e)
+        }
     };
   return (
      <div className="container sm:p-10 lg:w-[60%] h-[70vh] mx-auto lg:grid lg:grid-cols-2 mt-[5%]">
