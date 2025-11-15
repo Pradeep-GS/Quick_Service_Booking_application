@@ -23,7 +23,6 @@ const ServiceLogin = () => {
 
             if(res.success)
             {
-                navigate("/user/dashboard");
                 alert(res.message)
             }
             else{

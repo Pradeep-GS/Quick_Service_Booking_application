@@ -1,414 +1,334 @@
-import axios from 'axios'
-import{ useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const ServiceProfilesetup = () => {
-  const countries = [
-  "Afghanistan",
-  "Albania",
-  "Algeria",
-  "Andorra",
-  "Angola",
-  "Antigua and Barbuda",
-  "Argentina",
-  "Armenia",
-  "Australia",
-  "Austria",
-  "Azerbaijan",
-  "Bahamas",
-  "Bahrain",
-  "Bangladesh",
-  "Barbados",
-  "Belarus",
-  "Belgium",
-  "Belize",
-  "Benin",
-  "Bhutan",
-  "Bolivia",
-  "Bosnia and Herzegovina",
-  "Botswana",
-  "Brazil",
-  "Brunei",
-  "Bulgaria",
-  "Burkina Faso",
-  "Burundi",
-  "Côte d'Ivoire",
-  "Cabo Verde",
-  "Cambodia",
-  "Cameroon",
-  "Canada",
-  "Central African Republic",
-  "Chad",
-  "Chile",
-  "China",
-  "Colombia",
-  "Comoros",
-  "Congo (Congo-Brazzaville)",
-  "Costa Rica",
-  "Croatia",
-  "Cuba",
-  "Cyprus",
-  "Czechia (Czech Republic)",
-  "Democratic Republic of the Congo",
-  "Denmark",
-  "Djibouti",
-  "Dominica",
-  "Dominican Republic",
-  "Ecuador",
-  "Egypt",
-  "El Salvador",
-  "Equatorial Guinea",
-  "Eritrea",
-  "Estonia",
-  "Eswatini (fmr. Swaziland)",
-  "Ethiopia",
-  "Fiji",
-  "Finland",
-  "France",
-  "Gabon",
-  "Gambia",
-  "Georgia",
-  "Germany",
-  "Ghana",
-  "Greece",
-  "Grenada",
-  "Guatemala",
-  "Guinea",
-  "Guinea-Bissau",
-  "Guyana",
-  "Haiti",
-  "Holy See",
-  "Honduras",
-  "Hungary",
-  "Iceland",
-  "India",
-  "Indonesia",
-  "Iran",
-  "Iraq",
-  "Ireland",
-  "Israel",
-  "Italy",
-  "Jamaica",
-  "Japan",
-  "Jordan",
-  "Kazakhstan",
-  "Kenya",
-  "Kiribati",
-  "Kuwait",
-  "Kyrgyzstan",
-  "Laos",
-  "Latvia",
-  "Lebanon",
-  "Lesotho",
-  "Liberia",
-  "Libya",
-  "Liechtenstein",
-  "Lithuania",
-  "Luxembourg",
-  "Madagascar",
-  "Malawi",
-  "Malaysia",
-  "Maldives",
-  "Mali",
-  "Malta",
-  "Marshall Islands",
-  "Mauritania",
-  "Mauritius",
-  "Mexico",
-  "Micronesia",
-  "Moldova",
-  "Monaco",
-  "Mongolia",
-  "Montenegro",
-  "Morocco",
-  "Mozambique",
-  "Myanmar (formerly Burma)",
-  "Namibia",
-  "Nauru",
-  "Nepal",
-  "Netherlands",
-  "New Zealand",
-  "Nicaragua",
-  "Niger",
-  "Nigeria",
-  "North Korea",
-  "North Macedonia",
-  "Norway",
-  "Oman",
-  "Pakistan",
-  "Palau",
-  "Palestine State",
-  "Panama",
-  "Papua New Guinea",
-  "Paraguay",
-  "Peru",
-  "Philippines",
-  "Poland",
-  "Portugal",
-  "Qatar",
-  "Romania",
-  "Russia",
-  "Rwanda",
-  "Saint Kitts and Nevis",
-  "Saint Lucia",
-  "Saint Vincent and the Grenadines",
-  "Samoa",
-  "San Marino",
-  "Sao Tome and Principe",
-  "Saudi Arabia",
-  "Senegal",
-  "Serbia",
-  "Seychelles",
-  "Sierra Leone",
-  "Singapore",
-  "Slovakia",
-  "Slovenia",
-  "Solomon Islands",
-  "Somalia",
-  "South Africa",
-  "South Korea",
-  "South Sudan",
-  "Spain",
-  "Sri Lanka",
-  "Sudan",
-  "Suriname",
-  "Sweden",
-  "Switzerland",
-  "Syria",
-  "Tajikistan",
-  "Tanzania",
-  "Thailand",
-  "Timor-Leste",
-  "Togo",
-  "Tonga",
-  "Trinidad and Tobago",
-  "Tunisia",
-  "Turkey",
-  "Turkmenistan",
-  "Tuvalu",
-  "Uganda",
-  "Ukraine",
-  "United Arab Emirates",
-  "United Kingdom",
-  "United States of America",
-  "Uruguay",
-  "Uzbekistan",
-  "Vanuatu",
-  "Venezuela",
-  "Vietnam",
-  "Yemen",
-  "Zambia",
-  "Zimbabwe"
-  ]
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [form, setForm] = useState({
+    userName: "",
+    mailID: "",
+    password: "",
+    mobileNumber: "",
+    dob: "",
+    age: "",
+    country: "",
+    address: "",
+    pincode: "",
+    district: "",
+    state: "",
+    gender: "",
+    exp: "",
+    package: "",
+  });
 
-useEffect(() => {
-  async function fetchCategories() {
+  const locate = useLocation();
+  const navigate = useNavigate();
+
+  // Get prefilled data from navigation state
+  useEffect(() => {
+    if (locate.state) {
+      setForm((prev) => ({
+        ...prev,
+        userName: locate.state.name || "",
+        mailID: locate.state.email || "",
+        password: locate.state.password || "",
+        mobileNumber: locate.state.phone || "",
+      }));
+    }
+  }, [locate.state]);
+
+  // Fetch categories from backend
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const res = await axios.get("http://localhost:8080/service/getcat");
+        setCategories(res.data);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    }
+    fetchCategories();
+  }, []);
+
+  // Handle DOB and auto-calculate age
+  const handleDOB = (e) => {
+    const dob = e.target.value;
+    if (!dob) return;
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    setForm({ ...form, dob, age });
+  };
+
+  // Handle form field change
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  // Handle checkbox toggle
+  const handleCategoryChange = (id) => {
+    setSelectedCategories((prev) =>
+      prev.includes(id)
+        ? prev.filter((c) => c !== id)
+        : [...prev, id]
+    );
+  };
+
+  // Submit function
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const formDataToSend = {
+      name: form.userName,
+      email: form.mailID,
+      password: form.password,
+      mobileNumber: form.mobileNumber,
+      gender: form.gender,
+      serviceProvidingIds: selectedCategories.map((id) => Number(id)),
+      yearOfExperience: Number(form.exp),
+      salaryPerHr: parseFloat(form.package),
+      dob: form.dob,
+      age: Number(form.age),
+      country: form.country,
+      address: form.address,
+      pincode: form.pincode,
+      district: form.district,
+      state: form.state,
+    };
+
+    console.log("Payload being sent:", formDataToSend);
+
     try {
-      const res = await axios.get("http://localhost:8080/service/getcat");
-      setCategories(res.data);
+      const response = await axios.post(
+        "http://localhost:8080/service/signup",
+        formDataToSend
+      );
+      if (response.data.success) {
+        alert("Profile created successfully!");
+      } else {
+        alert("Something went wrong during signup!");
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Error submitting profile:", err);
+      alert("Server error, check console for details.");
     }
-  }
-  fetchCategories();
-}, []);
-const locate = useLocation()
-const[form,setform]=useState({
-    userName:locate.state.name,
-    mailID:locate.state.email,
-    password:locate.state.password,
-    mobileNumber:locate.state.phone,
-    dob:"",
-    age:"",
-    country:"",
-    address:"",
-    pincode:"",
-    district:"",
-    state:"",
-    gender:"",
-    exp:"",
-    package:""
-  })
-const formDataToSend = {
-  name: form.userName,
-  email: form.mailID,
-  password: form.password,
-  mobileNumber: form.mobileNumber,
-  gender: form.gender,
-  serviceProviding: selectedCategories.map(id => ({ categoryId: parseInt(id) })),
-  yearOfExperience: parseInt(form.exp),
-  salaryPerHr: parseFloat(form.package),
-  dob: form.dob,
-  age: parseInt(form.age),
-  country: form.country,
-  address: form.address,
-  pincode: form.pincode,
-  district: form.district,
-  state: form.state
-};
+  };
 
-  
-  const navigate =useNavigate()
-  const {name,email,password,phone}=locate.state
-  const verify =async(e)=>{
-    e.preventDefault()
-    try{
-      const response = await axios.post("http://localhost:8080/service/sigup",formDataToSend);
-      const result = response.data;
+  const countries = ["India", "United States", "United Kingdom", "Germany", "France", "Japan", "China", "Australia", "Canada", "Brazil"];
 
-      if(result.success)
-      {
-        navigate("/user/dashboard")
-      }
-      else{
-        alert("Some error")
-      }
-    }
-    catch(e)
-    {
-      console.log(e);
-    }
-  }
-  
-const agecalci = (e) => {
-  const dob = e.target.value;
-  if (!dob) return;
-  const birthDate = new Date(dob);
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  setform({ ...form, dob: dob, age: age });
-};
-
-  const change = (e)=>{
-    setform({...form,[e.target.name]:e.target.value})
-  }
   return (
-    <div className='w-full  bg-[var(--primary--color)] flex items-center justify-center p-6'>
-        <div className="container w-[90%] h-[100vh] bg-white p-5 rounded-2xl overflow-hidden">
-            <h3 className='text-center text-4xl text-[var(--primary--color)] mt-2'>Profile Setup</h3>
-            <div className='container w-full max-h-fit grid grid-cols-2 gap-2 mt-5'>
-                <div className="h-full p-2">
-                  <div className='w-full p-1 mt-5'>
-                    <label htmlFor="name" >Your Name</label>
-                    <input type="text" name="userName" id='userName' value={form.userName} placeholder='Enter Your Name' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off" />
-                  </div>
-                  <div className='w-full p-1 mt-5 grid grid-cols-2 gap-3'>
-                    <div>
-                      <label htmlFor="dob">Date OF Birth</label>
-                      <input type="date" name="dob" id="dob" className='border-[1px] w-full p-1' required onChange={agecalci} autoComplete="off"/>
-                    </div>
-                     <div>
-                      <label htmlFor="dob">Your Age</label>
-                      <input type="text" name="age" id="age" className='border-[1px] w-full p-1' value={form.age} placeholder='Enter Your Age'required  autoComplete="off" readOnly/>
-                    </div>
-                  </div>
-                  <div className='mt-5 flex gap-1 p-1 items-center'>
-                  <label>Gender:</label>
-                  <select name="gender" onChange={change} value={form.gender} className='border-2 p-1'>
-                    <option value="" disabled>Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
+    <div className="w-full bg-[var(--primary--color)] flex items-center justify-center p-6">
+      <div className="container w-[90%] bg-white p-5 rounded-2xl overflow-y-auto max-h-[95vh]">
+        <h3 className="text-center text-4xl text-[var(--primary--color)] mt-2 font-bold">
+          Profile Setup
+        </h3>
+
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            {/* Left Section */}
+            <div>
+              <label className="block mt-4">Your Name</label>
+              <input
+                type="text"
+                name="userName"
+                value={form.userName}
+                onChange={handleChange}
+                className="w-full border p-2 outline-none"
+                required
+              />
+
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label>Date of Birth</label>
+                  <input
+                    type="date"
+                    name="dob"
+                    value={form.dob}
+                    onChange={handleDOB}
+                    className="w-full border p-2"
+                    required
+                  />
                 </div>
-
-                  <div className='w-full p-1 mt-5'>
-                    <label htmlFor="mailID" >Your E-Mail Id</label>
-                    <input type="email" name="mailID" id='mailID' value={form.mailID} placeholder='Enter Your Mail Id' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off"/>
-                  </div>
-
-                  <div className='w-full p-1 mt-5'>
-                    <label htmlFor="password" >Your Password</label>
-                    <input type="password" name="password" value={form.password}  id='password' placeholder='Enter Your Password' required className='w-[100%] border-[1px] p-1 outline-none'onChange={change} autoComplete="off"/>
-                    <Link className='text-[var(--primary--color)] font-extrabold mt-[20px] text-[13px]'>Forget Password?</Link>
-                  </div>
-
-                  <div className='w-full p-1 mt-5'>
-                    <label htmlFor="mobile" >Your Mobile Number</label>
-                    <input type="text" name="mobileNumber" id='mobileNumber' value={form.mobileNumber} placeholder='Enter Your Mobile Number' required className='w-[100%] border-[1px] p-1 outline-none'onChange={change}autoComplete="off" />
-                  </div>
-
-                  <div className='w-full p-1 mt-5'>
-                    <label htmlFor="mobile" >Select Your Service Providing</label><br />
-                        <div className='flex gap-3'>
-                          {categories.map((cat) => (
-                              <div key={cat.categoryId} className='flex gap-3'>
-                                <label>
-                                  <input type="checkbox" value={cat.categoryId} checked={selectedCategories.includes(cat.categoryId)} onChange={(e) => { 
-                                    const id = cat.categoryId;
-                                      if (e.target.checked) {
-                                        setSelectedCategories([...selectedCategories, id]);
-                                      } else {
-                                        setSelectedCategories(selectedCategories.filter((c) => c !== id));
-                                      }
-                                    }}
-                                  />
-                                  {cat.categoryName}
-                                </label>
-                              </div>
-                             ))}
-
-                        </div>
-                  </div>
-                    
+                <div>
+                  <label>Age</label>
+                  <input
+                    type="text"
+                    name="age"
+                    value={form.age}
+                    readOnly
+                    className="w-full border p-2 bg-gray-100"
+                  />
                 </div>
-                <div className="h-full  p-2">
-                  <div className='w-full  grid grid-cols-2'>
-                      <div className='w-full p-1 mt-5'>
-                        <label htmlFor="exp" >Year Of Experience</label>
-                        <input type="number" name="exp" id='exp' onChange={change} placeholder='Enter Your Year Of Experience' required className='w-[100%] border-[1px] p-1 outline-none'autoComplete="off" />
-                      </div>
-                      <div className='w-full p-1 mt-5'>
-                        <label htmlFor="package" >Your Package In Hrs</label>
-                        <input type="number" step="0.01" name="package" id='package' onChange={change} placeholder='Enter Your Your Package In Hrs' required className='w-[100%] border-[1px] p-1 outline-none'autoComplete="off" />
-                      </div>
-                    </div>
-                  <div className='w-full p-1 mt-5'>
-                    <label htmlFor="country mt-5" >Selet Your Coutry</label>
-                      <select className='mx-5 border-[1px] outline-none p-1 mt-5' name='country' onChange={change} placeholder='Select Your Country' value={form.country}>
-                        <optgroup label="Select Your Country" placeholder='Select Your Country'>
-                            <option value="" disabled>
-                                Select Your Country
-                            </option>
-                          {countries.map((name, index) => (
-                            <option key={index} value={name} className=''>
-                              {name}
-                            </option>
-                          ))}
-                        </optgroup>
-                      </select>
-                  </div>
-                  <div className='w-full p-1 mt-5'>
-                    <label htmlFor="address" >Your Address</label>
-                    <textarea rows="5" type="address" name="address" id='address' placeholder='Enter Your Address' required className='w-[100%] border-[1px] p-1 outline-none' onChange={change} autoComplete="off"/>
-                    <div className='w-full  grid grid-cols-2'>
-                      <div className='w-full p-1 mt-5'>
-                          <label htmlFor="pincode">Your Pincode</label>
-                          <input type="text" name="pincode" id='pincode' placeholder='Enter Your Pincode' required className='w-[100%] border-[1px] p-[2px] outline-none'onChange={change} autoComplete="off"/>
-                      </div>
-                      <div className='w-full p-1 mt-5'>
-                          <label htmlFor="district">Your District</label>
-                          <input type="text" name="district" id='district' placeholder='Enter Your District' required className='w-[100%] border-[1px] p-[2px] outline-none'onChange={change} autoComplete="off" />
-                      </div>
-                      <div className='w-full p-1 mt-5'>
-                          <label htmlFor="state">Your State</label>
-                          <input type="text" name="state" id='state' placeholder='Enter Your State' required className='w-[100%] border-[1px] p-[2px] outline-none'onChange={change} autoComplete="off"/>
-                      </div>
-                    </div>
-                      <button className='w-full mt-5 bg-[var(--primary--color)] px-2 py-2 text-white' onClick={verify}>Update The Changes</button>
-                  </div>
-                </div>
+              </div>
+
+              <label className="block mt-4">Gender</label>
+              <select
+                name="gender"
+                value={form.gender}
+                onChange={handleChange}
+                className="border p-2 w-full"
+                required
+              >
+                <option value="">Select Gender</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+
+              <label className="block mt-4">Email</label>
+              <input
+                type="email"
+                name="mailID"
+                value={form.mailID}
+                onChange={handleChange}
+                className="w-full border p-2"
+                required
+              />
+
+              <label className="block mt-4">Password</label>
+              <input
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                className="w-full border p-2"
+                required
+              />
+
+              <label className="block mt-4">Mobile Number</label>
+              <input
+                type="text"
+                name="mobileNumber"
+                value={form.mobileNumber}
+                onChange={handleChange}
+                className="w-full border p-2"
+                required
+              />
+
+              <label className="block mt-4 mb-2">
+                Select Your Service Providing
+              </label>
+              <div className="grid grid-cols-2 gap-2 border p-2 rounded">
+                {categories.map((cat) => (
+                  <label key={cat.id} className="text-sm flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      value={cat.id}
+                      checked={selectedCategories.includes(cat.id)}
+                      onChange={() => handleCategoryChange(cat.id)}
+                    />
+                    {cat.categoryName}
+                  </label>
+                ))}
+              </div>
             </div>
-            
-        </div>
-    </div>
-  )
-}
 
-export default ServiceProfilesetup
+            {/* Right Section */}
+            <div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label>Year of Experience</label>
+                  <input
+                    type="number"
+                    name="exp"
+                    value={form.exp}
+                    onChange={handleChange}
+                    className="w-full border p-2"
+                    required
+                  />
+                </div>
+                <div>
+                  <label>Salary per Hour</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="package"
+                    value={form.package}
+                    onChange={handleChange}
+                    className="w-full border p-2"
+                    required
+                  />
+                </div>
+              </div>
+
+              <label className="block mt-4">Country</label>
+              <select
+                name="country"
+                value={form.country}
+                onChange={handleChange}
+                className="border p-2 w-full"
+                required
+              >
+                <option value="">Select Country</option>
+                {countries.map((c, i) => (
+                  <option key={i} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+
+              <label className="block mt-4">Address</label>
+              <textarea
+                name="address"
+                value={form.address}
+                onChange={handleChange}
+                className="w-full border p-2"
+                rows="4"
+                required
+              ></textarea>
+
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label>Pincode</label>
+                  <input
+                    type="text"
+                    name="pincode"
+                    value={form.pincode}
+                    onChange={handleChange}
+                    className="w-full border p-2"
+                    required
+                  />
+                </div>
+                <div>
+                  <label>District</label>
+                  <input
+                    type="text"
+                    name="district"
+                    value={form.district}
+                    onChange={handleChange}
+                    className="w-full border p-2"
+                    required
+                  />
+                </div>
+              </div>
+
+              <label className="block mt-4">State</label>
+              <input
+                type="text"
+                name="state"
+                value={form.state}
+                onChange={handleChange}
+                className="w-full border p-2"
+                required
+              />
+
+              <button
+                type="submit"
+                className="w-full mt-6 bg-[var(--primary--color)] py-2 text-white font-semibold rounded"
+              >
+                Update The Changes
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default ServiceProfilesetup;

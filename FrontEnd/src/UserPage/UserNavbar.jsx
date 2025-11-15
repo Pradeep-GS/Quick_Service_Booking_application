@@ -1,19 +1,20 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from "react-router-dom";
 
 const UserNavbar = () => {
   return (
-    <div className='w-full h-[70px] bg-[var(--primary--color)] p-2 flex items-center justify-between'>
-        <h2 className='text-3xl text-white'>Quick Serve App</h2>
-        <div className='flex gap-3'>
-          <Link className='text-white'>Home</Link>
-          <Link className='text-white'>My Bookings</Link>
-        </div>
-        <div className='rounded-[50%] w-[50px] bg-white h-[50px] flex items-center justify-center'>
-            <Link to={"/user/profilesetup"}>p</Link>
-        </div>
-    </div>
-  )
-}
+    <nav className="fixed top-0 left-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-[#4169E1]">QuickServe</h1>
 
-export default UserNavbar
+        <div className="space-x-6 text-gray-700 font-medium">
+          <Link to="/user/dashboard" className="hover:text-[#4169E1] transition">Home</Link>
+          <Link to="/user/bookings" className="hover:text-[#4169E1] transition">My Bookings</Link>
+          <Link to="/user/profilesetup" className="hover:text-[#4169E1] transition">Profile</Link>
+          <Link to="/" className="text-red-500 hover:text-red-600 transition">Logout</Link>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default UserNavbar;
