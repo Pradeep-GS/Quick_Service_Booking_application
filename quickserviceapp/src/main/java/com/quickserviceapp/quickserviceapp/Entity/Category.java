@@ -1,9 +1,9 @@
 package com.quickserviceapp.quickserviceapp.Entity;
 
-import com.quickserviceapp.quickserviceapp.Entity.ServiceProvider;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "service_category")
@@ -11,19 +11,22 @@ public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int categoryId;
+    private int id;
 
+    @Column(nullable = false, unique = true)
     private String categoryName;
 
-    @ManyToMany(mappedBy = "serviceProviding")
-    private List<ServiceProvider> providers = new ArrayList<>();
+    @ManyToMany(mappedBy = "serviceProviding", fetch = FetchType.LAZY)
+    @JsonBackReference
+    private Set<ServiceProvider> providers = new HashSet<>();
 
-    public int getCategoryId() {
-        return categoryId;
+    // Getters and Setters
+    public int getId() {
+        return id;
     }
 
-    public void setCategoryId(int categoryId) {
-        this.categoryId = categoryId;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getCategoryName() {
@@ -34,11 +37,11 @@ public class Category {
         this.categoryName = categoryName;
     }
 
-    public List<ServiceProvider> getProviders() {
+    public Set<ServiceProvider> getProviders() {
         return providers;
     }
 
-    public void setProviders(List<ServiceProvider> providers) {
+    public void setProviders(Set<ServiceProvider> providers) {
         this.providers = providers;
     }
 }

@@ -1,122 +1,52 @@
 package com.quickserviceapp.quickserviceapp.Entity;
 
-
 import jakarta.persistence.*;
-
+import lombok.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "USERS")
+@Table(name = "USERS")   // matches your DB table
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    private String User_name;
-    private String mailId;
-    private String PASSWORD;
-    @Column(name = "MOBILE_NUMBER")
+    @Column(name = "id")
+    private int id;
+
+    @Column(name = "user_name", nullable = false)
+    private String userName;
+
+    @Column(name = "mail_id", nullable = false, unique = true)
+    private String mailID;
+
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    @Column(name = "mobile_number", unique = true)
     private String mobileNumber;
-    private LocalDate DOB;
-    private int AGE;
-    private String COUNTRY;
-    private String ADDRESS;
-    private int PINCODE;
-    private String DISTRICT;
-    private String STATE;
 
-    public String getSTATE() {
-        return STATE;
-    }
+    @Column(name = "dob")
+    private LocalDate dob;
 
-    public void setSTATE(String STATE) {
-        this.STATE = STATE;
-    }
+    @Column(name = "age")
+    private Integer age;
 
-    public String getDISTRICT() {
-        return DISTRICT;
-    }
+    @Column(name = "country")
+    private String country;
 
-    public void setDISTRICT(String DISTRICT) {
-        this.DISTRICT = DISTRICT;
-    }
+    @Column(name = "address")
+    private String address;
 
-    public int getPINCODE() {
-        return PINCODE;
-    }
+    @Column(name = "pincode")
+    private Integer pincode;
 
-    public void setPINCODE(int PINCODE) {
-        this.PINCODE = PINCODE;
-    }
+    @Column(name = "district")
+    private String district;
 
-    public String getADDRESS() {
-        return ADDRESS;
-    }
-
-    public void setADDRESS(String ADDRESS) {
-        this.ADDRESS = ADDRESS;
-    }
-
-    public String getCOUNTRY() {
-        return COUNTRY;
-    }
-
-    public void setCOUNTRY(String COUNTRY) {
-        this.COUNTRY = COUNTRY;
-    }
-
-    public int getAGE() {
-        return AGE;
-    }
-
-    public void setAGE(int AGE) {
-        this.AGE = AGE;
-    }
-
-    public LocalDate getDOB() {
-        return DOB;
-    }
-
-    public void setDOB(LocalDate DOB) {
-        this.DOB = DOB;
-    }
-
-    public String getMOBILE_NUMBER() {
-        return mobileNumber;
-    }
-
-    public void setMOBILE_NUMBER(String mobileNumber) {
-        this.mobileNumber = mobileNumber;
-    }
-
-    public String getPASSWORD() {
-        return PASSWORD;
-    }
-
-    public void setPASSWORD(String PASSWORD) {
-        this.PASSWORD = PASSWORD;
-    }
-
-    public String getmailId() {
-        return mailId;
-    }
-
-    public void setmailId(String mailId) {
-        this.mailId = mailId;
-    }
-
-    public String getUser_name() {
-        return User_name;
-    }
-
-    public void setUser_name(String user_name) {
-        User_name = user_name;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
+    @Column(name = "state")
+    private String state;
 }

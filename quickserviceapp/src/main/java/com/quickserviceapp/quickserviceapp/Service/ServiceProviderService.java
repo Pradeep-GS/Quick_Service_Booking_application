@@ -4,67 +4,83 @@ import com.quickserviceapp.quickserviceapp.DTO.ProviderDTO;
 import com.quickserviceapp.quickserviceapp.Entity.Category;
 import com.quickserviceapp.quickserviceapp.Entity.ServiceProvider;
 import com.quickserviceapp.quickserviceapp.Repository.CategoryRepository;
-import com.quickserviceapp.quickserviceapp.Repository.ServiceRepository;
+import com.quickserviceapp.quickserviceapp.Repository.ServiceProviderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ServiceProviderService {
 
     @Autowired
-    private ServiceRepository serviceRepository;
+    private ServiceProviderRepository serviceProviderRepository;
 
     @Autowired
     private CategoryRepository categoryRepository;
 
+    // ✅ Register a new provider
     @Transactional
-    public boolean CreateProvider(@RequestBody ProviderDTO dto) {
-        if (isexist(dto.getEmail(), dto.getMobileNumber())) {
-            return false;
+    public ServiceProvider registerProvider(ProviderDTO dto) {
+        // Duplicate checks
+        if (serviceProviderRepository.existsByEmail(dto.getEmail())) {
+            throw new RuntimeException("Email already exists");
         }
-        ServiceProvider service = new ServiceProvider();
-        service.setName(dto.getName());
-        service.setEmail(dto.getEmail());
-        service.setPassword(dto.getPassword());
-        service.setMobileNumber(dto.getMobileNumber());
-        service.setGender(dto.getGender());
-        service.setYearOfExperience(dto.getYearOfExperience());
-        service.setSalaryPerHr(dto.getSalaryPerHr());
-        service.setDob(dto.getDob());
-        service.setAge(dto.getAge());
-        service.setCountry(dto.getCountry());
-        service.setAddress(dto.getAddress());
-        service.setPincode(dto.getPincode());
-        service.setDistrict(dto.getDistrict());
-        service.setState(dto.getState());
+        if (serviceProviderRepository.existsByMobileNumber(dto.getMobileNumber())) {
+            throw new RuntimeException("Mobile number already exists");
+        }
+
+        ServiceProvider provider = new ServiceProvider();
+        provider.setName(dto.getName());
+        provider.setEmail(dto.getEmail());
+        provider.setPassword(dto.getPassword());
+        provider.setMobileNumber(dto.getMobileNumber());
+        provider.setGender(dto.getGender());
+        provider.setYearOfExperience(dto.getYearOfExperience());
+        provider.setSalaryPerHr(dto.getSalaryPerHr());
+        provider.setDob(dto.getDob());
+        provider.setAge(dto.getAge());
+        provider.setCountry(dto.getCountry());
+        provider.setAddress(dto.getAddress());
+        provider.setPincode(dto.getPincode());
+        provider.setDistrict(dto.getDistrict());
+        provider.setState(dto.getState());
+
+        // Attach categories
         if (dto.getServiceProvidingIds() != null && !dto.getServiceProvidingIds().isEmpty()) {
-            List<Category> categories = categoryRepository.findAllById(dto.getServiceProvidingIds());
-            service.setServiceProviding(categories);
+            List<Category> cats = categoryRepository.findAllById(dto.getServiceProvidingIds());
+            if (cats.isEmpty()) {
+                throw new RuntimeException("Provided category ids are invalid");
+            }
+            provider.setServiceProviding(new HashSet<>(cats));
         }
-        serviceRepository.save(service);
-        return true;
+
+        return serviceProviderRepository.save(provider);
     }
 
-    public boolean isexist(@RequestBody String email, String mobileNumber) {
-        return serviceRepository.findBymobileNumber(mobileNumber).isPresent() ||
-                serviceRepository.findByemail(email).isPresent();
+    // ✅ Validate login
+    public Optional<ServiceProvider> validateProvider(String email, String password) {
+        return serviceProviderRepository.findByEmailAndPassword(email, password);
     }
 
-    public boolean login(@RequestBody String email, String password) {
-        Optional<ServiceProvider> optProvider = serviceRepository.findByemail(email);
-        if (optProvider.isPresent()) {
-            ServiceProvider service = optProvider.get();
-            return service.getPassword().equals(password);
-        }
-        return false;
-    }
-
+    // ✅ Fetch all categories
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
+    }
+
+    // ✅ Fetch all providers
+    public List<ServiceProvider> getAllProviders() {
+        return serviceProviderRepository.findAll();
+    }
+
+    // ✅ Get provider by ID
+    public ServiceProvider getProviderById(int id) {
+        return serviceProviderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Provider not found with id: " + id));
+    }
+
+    // ✅ Check if provider already exists by email or mobile number
+    public boolean isExist(String email, String mobileNumber) {
+        return serviceProviderRepository.existsByEmailOrMobileNumber(email, mobileNumber);
     }
 }

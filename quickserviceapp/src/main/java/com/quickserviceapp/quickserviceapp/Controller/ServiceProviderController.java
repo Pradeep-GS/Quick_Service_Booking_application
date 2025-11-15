@@ -2,81 +2,95 @@ package com.quickserviceapp.quickserviceapp.Controller;
 
 import com.quickserviceapp.quickserviceapp.DTO.ProviderDTO;
 import com.quickserviceapp.quickserviceapp.Entity.Category;
+import com.quickserviceapp.quickserviceapp.Entity.ServiceProvider;
 import com.quickserviceapp.quickserviceapp.Service.ServiceProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/service")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ServiceProviderController {
-    @Autowired
-    ServiceProviderService serviceProviderService;
 
-    @PostMapping("/sigup")
-    public ResponseEntity<Map<String, Object>>signup(@RequestBody ProviderDTO dto)
-    {
-        Map<String, Object> response = new HashMap<>();
-       boolean res =  serviceProviderService.CreateProvider(dto);
-        if (res) {
-            response.put("success", true);
-            response.put("message", "User created successfully");
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } else {
-            response.put("success", false);
-            response.put("message", "User already exists or signup failed");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    @Autowired
+    private ServiceProviderService serviceProviderService;
+
+    @PostMapping("/signup")
+    public ResponseEntity<Map<String,Object>> signup(@RequestBody ProviderDTO dto) {
+        Map<String,Object> res = new HashMap<>();
+        try {
+            ServiceProvider saved = serviceProviderService.registerProvider(dto);
+            res.put("success", true);
+            res.put("message", "User created successfully");
+            res.put("providerId", saved.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(res);
+        } catch (RuntimeException ex) {
+            res.put("success", false);
+            res.put("message", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            res.put("success", false);
+            res.put("message", "Internal server error");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
         }
     }
 
     @PostMapping("/check")
-    public ResponseEntity<Map<String, Object>> check(@RequestBody ProviderDTO dto)
-    {
-        boolean result= serviceProviderService.isexist(dto.getEmail(), dto.getMobileNumber());
-        Map<String, Object> map = new HashMap<>();
+public ResponseEntity<Map<String, Object>> check(@RequestBody Map<String, String> payload) {
+    String email = payload.get("email");
+    String mobileNumber = payload.get("mobileNumber");
 
-        if(result)
-        {
-            map.put("success",true);
-            map.put("message", "User Already Existed");
+    Map<String, Object> res = new HashMap<>();
 
-            return  ResponseEntity.status(HttpStatus.CREATED).body(map);
-        }
-        else {
-            map.put("success",false);
-            map.put("message", "User Not Existed");
-            return  ResponseEntity.status(HttpStatus.CREATED).body(map);
-        }
+    if (email == null || mobileNumber == null) {
+        res.put("success", false);
+        res.put("message", "Email and Mobile Number are required");
+        return ResponseEntity.badRequest().body(res);
     }
+
+    boolean exists = serviceProviderService.isExist(email, mobileNumber);
+    res.put("success", exists);
+    res.put("message", exists ? "User Already Exists" : "User Not Exists");
+
+    return ResponseEntity.ok(res);
+}
+
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody ProviderDTO dto)
-    {
-        boolean result =serviceProviderService.login(dto.getEmail(), dto.getPassword());
-        Map<String, Object> map = new HashMap<>();
-
-        if(result)
-        {
-            map.put("success",true);
-            map.put("message", "Successfully Login");
-
-            return  ResponseEntity.status(HttpStatus.CREATED).body(map);
+    public ResponseEntity<Map<String,Object>> login(@RequestBody Map<String,String> payload) {
+        String email = payload.get("email");
+        String password = payload.get("password");
+        Map<String,Object> res = new HashMap<>();
+        Optional<ServiceProvider> opt = serviceProviderService.validateProvider(email, password);
+        if (opt.isPresent()) {
+            res.put("success", true);
+            res.put("message", "Successfully Login");
+            res.put("provider", opt.get());
+        } else {
+            res.put("success", false);
+            res.put("message", "Invalid email or password");
         }
-        else {
-            map.put("success",false);
-            map.put("message", "New User Goto SignIn");
-            return  ResponseEntity.status(HttpStatus.CREATED).body(map);
-        }
+        return ResponseEntity.ok(res);
     }
+
     @GetMapping("/getcat")
-    public List<Category> getdata()
-    {
-        return serviceProviderService.getAllCategories();
+    public ResponseEntity<List<Category>> getCategories() {
+        List<Category> categories = serviceProviderService.getAllCategories();
+        return ResponseEntity.ok(categories);
+    }
+
+    @GetMapping("/getproviders")
+    public ResponseEntity<List<ServiceProvider>> getProviders() {
+        List<ServiceProvider> list = serviceProviderService.getAllProviders();
+        return ResponseEntity.ok(list);
+    }
+      @GetMapping("/provider/{id}")
+    public ResponseEntity<?> getProviderById(@PathVariable int id) {
+        ServiceProvider provider = serviceProviderService.getProviderById(id);
+        return ResponseEntity.ok(provider);
     }
 }

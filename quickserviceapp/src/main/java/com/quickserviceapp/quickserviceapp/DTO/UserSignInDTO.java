@@ -6,7 +6,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserLogInDto {
-    private String mailID;
-    private String password;
+public class UserSignInDTO {
+    private String mailId;
+    private String mobileNumber;
 }

@@ -1,10 +1,10 @@
 package com.quickserviceapp.quickserviceapp.Entity;
 
-import com.quickserviceapp.quickserviceapp.Entity.Category;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "service_provider")
@@ -19,15 +19,6 @@ public class ServiceProvider {
     private String password;
     private String mobileNumber;
     private String gender;
-
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-            name = "service_provider_category",
-            joinColumns = @JoinColumn(name = "provider_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
-    private List<Category> serviceProviding = new ArrayList<>();
-
     private int yearOfExperience;
     private float salaryPerHr;
     private LocalDate dob;
@@ -38,6 +29,16 @@ public class ServiceProvider {
     private String district;
     private String state;
 
+    @ManyToMany
+    @JoinTable(
+        name = "provider_category",
+        joinColumns = @JoinColumn(name = "provider_id"),
+        inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    @JsonManagedReference
+    private Set<Category> serviceProviding = new HashSet<>();
+
+    // Getters and Setters
     public int getId() {
         return id;
     }
@@ -84,14 +85,6 @@ public class ServiceProvider {
 
     public void setGender(String gender) {
         this.gender = gender;
-    }
-
-    public List<Category> getServiceProviding() {
-        return serviceProviding;
-    }
-
-    public void setServiceProviding(List<Category> serviceProviding) {
-        this.serviceProviding = serviceProviding;
     }
 
     public int getYearOfExperience() {
@@ -164,5 +157,13 @@ public class ServiceProvider {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public Set<Category> getServiceProviding() {
+        return serviceProviding;
+    }
+
+    public void setServiceProviding(Set<Category> serviceProviding) {
+        this.serviceProviding = serviceProviding;
     }
 }
