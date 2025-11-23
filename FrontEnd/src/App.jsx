@@ -1,20 +1,30 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Home from "./Home";
+
+// User pages
 import UserLogin from "./UserPage/UserLogin";
 import UserSignIn from "./UserPage/UserSignIn";
-import Home from "./Home";
 import UserDashBoard from "./UserPage/UserDashBoard";
 import UserProfileSetUp from "./UserPage/UserProfileSetUp";
+import UserProfileUpdate from "./UserPage/UserProfileUpdate";
+import UserBookingPage from "./UserPage/UserBookingPage";
+import UserRatingPage from "./UserRatingPage";
+import UserBookingHistoryPage from "./UserPage/UserBookingHistoryPage";
+// Service Provider pages
 import ServiceLogin from "./ServiceProvider/ServiceLogin";
 import ServiceSignin from "./ServiceProvider/ServiceSignin";
 import ServiceProfilesetup from "./ServiceProvider/ServiceProfilesetup";
-import UserBookingPage from "./UserPage/UserBookingPage";
+import ServiceProfileUpdate from "./ServiceProvider/ServiceProfileUpdate";
+import ServiceDashboard from "./ServiceProvider/ServiceDashboard"; // Corrected import
+import ServiceNotifications from "./ServiceProvider/ServiceNotifications";
+import ServiceBookingDetails from "./ServiceProvider/ServiceBookingDetails";
+import PaymentUpdate from "./UserPage/PaymentUpdate";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Home />,
   },
-  // USER ROUTES
   {
     path: "/user/login",
     element: <UserLogin />,
@@ -32,23 +42,53 @@ const router = createBrowserRouter([
     element: <UserProfileSetUp />,
   },
   {
-  path: "/user/booking/:providerId",
-  element: <UserBookingPage />,
-},
-
-  // SERVICE ROUTES
+  path: "/user/bookings",
+  element: <UserBookingHistoryPage />,
+  },
+  {
+    path: "/user/profileupdate",
+    element: <UserProfileUpdate />,
+  },
+  {
+    path: "/user/booking/:providerId",
+    element: <UserBookingPage />,
+  },
   {
     path: "/service/login",
     element: <ServiceLogin />,
   },
   {
-    path: "/service/sigin",
+    path: "/service/signin",
     element: <ServiceSignin />,
   },
   {
     path: "/service/profilesetup",
     element: <ServiceProfilesetup />,
   },
+  {
+    path: "/service/dashboard",
+    element: <ServiceDashboard />,
+  },
+  {
+    path: "/service/history",
+    element: <ServiceBookingDetails />, // Updated to match actual file
+  },
+  {
+    path: "/service/profileupdate",
+    element: <ServiceProfileUpdate />,
+  },
+  {
+    path: "/service/notifications",
+    element: <ServiceNotifications />,
+  },
+  {
+    path: "/service/ratings",
+    element: <UserRatingPage />,
+  },
+  {
+    path: "/payment-success",
+    element: <PaymentUpdate />,
+  }
 ]);
 
 const App = () => {

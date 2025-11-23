@@ -1,14 +1,9 @@
 package com.quickserviceapp.quickserviceapp.DTO;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-
 import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class UserDto {
     private String userName;
     private String mailID;
@@ -21,7 +16,7 @@ public class UserDto {
     private Integer age;
     private String country;
     private String address;
-    private Integer pincode;
+    private String pincode;
     private String district;
     private String state;
 }

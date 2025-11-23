@@ -1,20 +1,20 @@
 package com.quickserviceapp.quickserviceapp.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "USERS")   // matches your DB table
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column(name = "user_name", nullable = false)
@@ -35,18 +35,11 @@ public class User {
     @Column(name = "age")
     private Integer age;
 
-    @Column(name = "country")
     private String country;
-
-    @Column(name = "address")
     private String address;
-
-    @Column(name = "pincode")
-    private Integer pincode;
-
-    @Column(name = "district")
+    private String pincode;
     private String district;
-
-    @Column(name = "state")
     private String state;
+
+    public User(int id) { this.id = id; }
 }

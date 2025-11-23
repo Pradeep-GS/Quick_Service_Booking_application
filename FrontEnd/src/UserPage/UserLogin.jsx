@@ -1,20 +1,20 @@
-import { useState } from 'react';
-import login_img from '../assets/login.png';
+import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { toast, Toaster } from 'react-hot-toast';
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast, Toaster } from "react-hot-toast";
+import login_img from "../assets/login.png";
 
-const UserLogin = () => {
+export default function UserLogin() {
   const [view, setView] = useState(true);
   const [email, setEmail] = useState("");
-  const [pass, setPass] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
   const login = async (e) => {
     e.preventDefault();
 
-    if (!email || !pass) {
+    if (!email || !password) {
       toast.error("Please enter email and password!");
       return;
     }
@@ -22,16 +22,14 @@ const UserLogin = () => {
     try {
       const response = await axios.post("http://localhost:8080/user/login", {
         mailID: email,
-        password: pass,
+        password: password,
       });
 
       const res = response.data;
 
       if (res.success) {
-        // ✅ Save userId in localStorage
-        localStorage.setItem("userId", res.user.id);
-        localStorage.setItem("userName", res.user.name);
-        localStorage.setItem("userEmail", res.user.mailID);
+        // Save user details in localStorage for session
+        localStorage.setItem("serviceUser", JSON.stringify(res.user));
 
         toast.success(res.message || "Login successful!", {
           position: "bottom-right",
@@ -42,71 +40,86 @@ const UserLogin = () => {
             fontWeight: "500",
           },
         });
-
-        setTimeout(() => navigate("/user/dashboard"), 1500);
+        setTimeout(() => navigate("/user/dashboard"), 1000);
       } else {
         toast.error(res.message || "Invalid credentials!");
-        navigate("/user/signup");
+        if (res.message === "No user found with this email") {
+          toast("Redirecting to Sign Up page...", {
+            icon: "🔹",
+            duration: 1500,
+            style: {
+              background: "#4169E1",
+              color: "white",
+            },
+          });
+          setTimeout(() => navigate("/user/signup"), 1500);
+        }
       }
     } catch (error) {
-      console.error(error);
+      console.error("Login error:", error);
       toast.error("Login failed! Please try again.");
     }
   };
 
   return (
-    <div className="container sm:p-10 lg:w-[70%] h-[70vh] mx-auto lg:grid lg:grid-cols-2 mt-[5%]">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <Toaster />
-      <div className="form border-[1px] flex flex-col justify-center">
-        <h1 className="text-center text-5xl text-[var(--primary--color)] my-10">LOG IN</h1>
-        <div className="form w-[80%] mx-auto">
-          <form onSubmit={login} className="mx-auto">
-            <div className="mail border-[1px] w-full h-10">
-              <input
-                type="text"
-                id="email"
-                placeholder="Enter Your Email"
-                className="w-full h-10 p-1 outline-none"
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="pass border-[1px] w-full mt-10 h-10 flex">
+      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white rounded-2xl shadow-lg overflow-hidden">
+
+        {/* Login Form */}
+        <div className="p-10 flex flex-col justify-center">
+          <h2 className="text-3xl font-bold text-[#4169E1] mb-6">Welcome Back!</h2>
+          <p className="text-gray-600 mb-6">Log in to continue accessing your account</p>
+
+          <form onSubmit={login} className="space-y-6">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#4169E1] outline-none"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+
+            <div className="relative">
               <input
                 type={view ? "password" : "text"}
-                id="password"
-                placeholder="Enter Your Password"
-                name="pass"
-                className="w-[100%] h-10 p-1 outline-none"
-                onChange={(e) => setPass(e.target.value)}
+                placeholder="Enter your password"
+                className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#4169E1] outline-none"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
               />
               <div
-                type="button"
-                className="mr-1 text-2xl mt-2 cursor-pointer text-center"
+                className="absolute right-3 top-3 text-gray-600 text-xl cursor-pointer"
                 onClick={() => setView(!view)}
               >
                 {view ? <FaEye /> : <FaEyeSlash />}
               </div>
             </div>
+
             <button
               type="submit"
-              className="mt-10 w-[80%] border-[1px] mx-9 bg-[var(--primary--color)] px-2 py-2 text-white cursor-pointer"
+              className="w-full bg-[#4169E1] text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
             >
               Log In
             </button>
           </form>
-          <p className="mt-10 text-center">
-            If Not Registered?{" "}
-            <Link to={"/user/signup"} className="text-blue-500">
-              Sign In
+
+          <p className="text-center text-sm text-gray-500 mt-4">
+            Don’t have an account?{" "}
+            <Link to="/user/signup" className="text-[#4169E1] font-semibold">
+              Sign Up
             </Link>
           </p>
         </div>
-      </div>
-      <div className="image bg-[var(--primary--color)] hidden lg:flex justify-center items-center text-white">
-        <img src={login_img} alt="login" />
+
+        {/* Illustration */}
+        <div className="hidden lg:flex items-center justify-center bg-gradient-to-b from-[#4169E1] to-[#89A7FF]">
+          <img src={login_img} alt="illustration" className="max-w-[80%]" />
+        </div>
+
       </div>
     </div>
   );
-};
-
-export default UserLogin;
+}

@@ -1,65 +1,55 @@
-import { useState } from 'react'
-import login_img from'../assets/service_login.png'
-import { FaEye,FaEyeSlash } from "react-icons/fa";
-import { Link, useNavigate} from 'react-router-dom';
-import axios from 'axios';
-const ServiceLogin = () => {
-    const[view,setview]=useState(true)
-    const[email,setemail]=useState("")
-    const[pass,setpass]=useState("")
+import { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useNavigate,Link } from "react-router-dom";
+import { toast, Toaster } from "react-hot-toast";
+import login_img from "../assets/service_login.png";
+import { loginServiceUser } from "../api";
 
-   const navigate=useNavigate();
+export default function ServiceLogin() {
+  const [email, setEmail] = useState("");
+  const [pass, setPass] = useState("");
+  const [view, setView] = useState(true);
+  const navigate = useNavigate();
 
-    const login=async(e)=>
-    {
-        e.preventDefault()
-
-        try{
-            const response = await axios.post("http://localhost:8080/service/login",{
-                email:email,
-                password:pass,
-            });
-            const res = response.data;
-
-            if(res.success)
-            {
-                alert(res.message)
-            }
-            else{
-                alert(res.message)
-                navigate("/service/sigin");
-            }
-        }
-        catch(e)
-        {
-            console.log(e);
-        }
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!email || !pass) return toast.error("Enter email & password!");
+    try {
+      const res = await loginServiceUser(email, pass);
+      if (res.success) {
+        toast.success("Login successful");
+        setTimeout(() => navigate("/service/dashboard"), 900);
+      } else toast.error(res.message || "Invalid credentials");
+    } catch (err) {
+      console.error(err);
+      toast.error("Server error");
     }
-  return (
-    <div className="container sm:p-10 lg:w-[60%] h-[70vh] mx-auto lg:grid lg:grid-cols-2 mt-[5%]">
-        <div className="form border-[1px]  flex flex-col justify-center">
-            <h1 className="text-center text-5xl text-[var(--primary--color)] my-10 ">LOG IN</h1>
-            <div className="form w-[80%] mx-auto">
-                <form onSubmit={login} className="mx-auto"> 
-                    <div className="mail border-[1px] w-full h-10">
-                        <input type="text" id="email" placeholder="Enter Your Email / UserName"className="w-full h-10 p-1 outline-none" onChange={(e)=>setemail(e.target.value)}/>
-                    </div>
-                    <div className="pass border-[1px] w-full mt-10 h-10 flex">
-                        <input type={view?"password":"text"} id="password" placeholder="Enter Your Password" name="pass" className="w-[100%] h-10 p-1 outline-none"  onChange={(e)=>setpass(e.target.value)} />
-                        <div type="button" className=" mr-1 text-2xl mt-2 cursor-pointer text-center" onClick={()=>setview(!view)}>
-                            {view?<FaEye />:<FaEyeSlash/>}
-                        </div>
-                    </div>
-                    <button type="submit" className="mt-10 w-[80%] border-[1px] mx-9 bg-[var(--primary--color)] px-2 py-2 text-white cursor-pointer" >Log In</button>
-                </form>
-                <p className='mt-10 text-center'>If Not Registed ?  <Link to={'/service/sigin'} className='text-blue-500'>Sign In</Link></p>
-            </div>
-        </div>
-        <div className="image bg-[var(--primary--color)] hidden lg:flex justify-center items-center text-white">
-            <img src={login_img} alt="" />
-        </div>
-    </div>
-  )
-}
+  };
 
-export default ServiceLogin
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+      <Toaster />
+      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="p-10 flex flex-col justify-center">
+          <h2 className="text-3xl font-bold text-[#4169E1] mb-4">Service Provider Login</h2>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" className="w-full border rounded-lg px-4 py-3 outline-none" />
+            <div className="relative">
+              <input value={pass} onChange={e=>setPass(e.target.value)} type={view ? "password" : "text"} placeholder="Password" className="w-full border rounded-lg px-4 py-3 outline-none" />
+              <div className="absolute right-3 top-3 cursor-pointer" onClick={()=>setView(!view)}>
+                {view ? <FaEye /> : <FaEyeSlash />}
+              </div>
+            </div>
+            <button type="submit" className="w-full bg-[#4169E1] text-white py-3 rounded-lg">Log In</button>
+              <p className="text-center text-sm text-gray-500 mt-4"> Don’t have an account?<Link to="/service/signin" className="text-[#4169E1] font-semibold">Sign Up
+              </Link>
+              </p>
+          </form>
+        </div>
+        <div className="hidden lg:flex items-center justify-center bg-gradient-to-b from-[#4169E1] to-[#89A7FF]">
+          <img src={login_img} alt="illustration" className="max-w-[80%]" />
+        </div>
+      </div>
+    </div>
+  );
+}

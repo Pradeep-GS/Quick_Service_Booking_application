@@ -1,110 +1,136 @@
-import { useState } from 'react'
-import login_img from'../assets/login.png'
-import { FaEye,FaEyeSlash } from "react-icons/fa";
-import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-const UserSignIn = () => {
-    const[view,setview]=useState(true)
-    const [isValid, setIsValid] = useState(null);
-    const[form,setform]=useState({
-        name:'',
-        email:'',
-        pass:'',
-        phone:''
-    })
-    const navigate = useNavigate()
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast, Toaster } from "react-hot-toast";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import login_img from "../assets/login.png";
 
-    const ErrorMessage=(password)=>{
-        if(password.length<8)
-            return "The Password Length Is Less Than 8";
-        if(!/[A-Z]/.test(password))
-            return "The Password Must Contain AtLeast 1 UpperCase";
-        if(!/\d/.test(password))
-            return "The Password Must Contain AtLeast 1 Numeric Number";
-        if(!/[!@#$%^&*_-]/.test(password))
-            return "The Password Must Contain AtLeast 1 Special Character";
-        return null
-    }
-    const verify = (pass)=>
-    {
-        const reg = /^(?=.[A_Z]) (?=.*\d)(?=.[!@#$%^&*_-]).{8,}$/;
-        return reg.test(pass)
-    }
-    const change = (e)=>{
-        const {name,value}=e.target;
-        setform({...form,[name]:value})
-        if (name === "pass") {
-        setIsValid(verify(value));
-        }
-    }
-    const display = async (e) => {
+export default function UserSignIn() {
+  const navigate = useNavigate();
+  const [view, setView] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", pass: "", phone: "" });
+  const [rules, setRules] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false,
+  });
+
+  const updateRules = (password) => {
+    setRules({
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /\d/.test(password),
+      special: /[!@#$%^&*_\-]/.test(password),
+    });
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((s) => ({ ...s, [name]: value }));
+    if (name === "pass") updateRules(value);
+  };
+
+  const emailIsValid = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const phoneIsValid = (phone) => /^\d{10}$/.test(phone);
+
+  const handleContinue = async (e) => {
     e.preventDefault();
-
-    const error = ErrorMessage(form.pass);
-    if (error != null) {
-        alert(error);
-        return;
+    if (!form.name || !form.email || !form.pass || !form.phone) {
+      toast.error("All fields are required");
+      return;
+    }
+    if (!emailIsValid(form.email)) {
+      toast.error("Enter a valid email");
+      return;
+    }
+    if (!phoneIsValid(form.phone)) {
+      toast.error("Enter a valid 10-digit phone number");
+      return;
+    }
+    updateRules(form.pass);
+    const allOk = Object.values(rules).every(Boolean);
+    if (!allOk) {
+      toast.error("Password must meet all rules");
+      return;
     }
 
     try {
-        const res = await axios.post("http://localhost:8080/user/search", {
-            mailId: form.email,
-            mobileNumber: form.phone
-        });
+      const checkRes = await axios.post("http://localhost:8080/user/search", {
+        mailID: form.email,
+        mobileNumber: form.phone,
+      });
 
-        const result = res.data;
+      if (checkRes.data && checkRes.data.success) {
+        toast.success("User already exists. Redirecting to login...");
+        setTimeout(() => navigate("/user/login"), 800);
+        return;
+      }
 
-        if (result.success) {
-            alert(result.message); 
-            navigate("/user/login")
-        } else {
-            navigate("/user/profilesetup", {
-                state: {
-                    name: form.name,
-                    email: form.email,
-                    password: form.pass,
-                    phone: form.phone
-                }
-            });
-        }
+      navigate("/user/profilesetup", {
+        state: {
+          userName: form.name,
+          mailID: form.email,
+          password: form.pass,
+          mobileNumber: form.phone,
+        },
+      });
     } catch (err) {
-        console.error("Error while processing:", err);
-        alert("Something went wrong while checking the user");
+      console.error(err);
+      toast.error(err.response?.data?.message || "Server error");
     }
-};
+  };
+
+  const RuleLine = ({ ok, text }) => (
+    <div className="flex items-center gap-2">
+      <div className={`w-5 h-5 rounded-full flex items-center justify-center text-white ${ok ? "bg-green-500" : "bg-gray-300"}`}>
+        {ok ? "✓" : "✗"}
+      </div>
+      <div className={`text-sm ${ok ? "text-gray-700" : "text-gray-400"}`}>{text}</div>
+    </div>
+  );
 
   return (
-     <div className="container sm:p-10 lg:w-[70%] h-[70vh] mx-auto lg:grid lg:grid-cols-2 mt-[5%]">
-            <div className="form border-[1px]  flex flex-col justify-center">
-                <h1 className="text-center text-5xl text-[var(--primary--color)] my-10 ">SIGN IN</h1>
-                <div className="form w-[80%] mx-auto">
-                    <form onSubmit={display} className="mx-auto"> 
-                        <div className="name border-[1px] w-full h-10">
-                            <input type="text" id="name" placeholder="Enter Your Name" name="name" className="w-full h-10 p-1 outline-none" onChange={change} />
-                        </div>
-                        <div className="mail border-[1px] mt-10 w-full h-10">
-                            <input type="email" id="email" placeholder="Enter Your Email"className="w-full h-10 p-1 outline-none" name="email" onChange={change}/>
-                        </div>
-                         <div className="pass w-full h-10 flex items-center border mt-10 r px-2">
-                            <input type={view?"password":"text"} id="password" placeholder="Enter Your Password" name="pass" className="w-[100%] h-10 p-1 outline-none"  onChange={change} />
-                            <div type="button" className=" mr-1 text-2xl mt-2 cursor-pointer text-center" onClick={()=>setview(!view)}>{view?<FaEye />:<FaEyeSlash/>}</div>
-                            
-                        </div>
-                        <div className="phone border-[1px] mt-10 w-full h-10">
-                            <input type="text" id="phone" placeholder="Enter Your Mobile Number"className="w-full h-10 p-1 outline-none" name="phone" onChange={change}/>
-                        </div>
-                        <button type="submit" className="mt-10 w-[80%] border-[1px] mx-9 bg-[var(--primary--color)] px-2 py-2 text-white">Sign In</button>
-                    </form>
-                    <p className='mt-10 text-center'>If Already Registed ?  <Link to={'/user/login'} className='text-blue-500'>Log In</Link></p>
-                </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Toaster />
+      <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white rounded-2xl shadow-lg overflow-hidden">
+        <div className="p-8 flex flex-col justify-center">
+          <h2 className="text-3xl font-bold text-[#4169E1] mb-6">Create Account</h2>
+
+          <form onSubmit={handleContinue} className="space-y-4">
+            <input name="name" value={form.name} onChange={handleChange} placeholder="Full name" className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#4169E1] outline-none" />
+
+            <input name="email" value={form.email} onChange={handleChange} placeholder="Email address" type="email" className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#4169E1] outline-none" />
+
+            <div className="relative">
+              <input name="pass" value={form.pass} onChange={handleChange} placeholder="Create password" type={view ? "text" : "password"} className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#4169E1] outline-none" />
+              <div onClick={() => setView((v) => !v)} className="absolute right-3 top-3 text-gray-600 cursor-pointer">
+                {view ? <FaEyeSlash /> : <FaEye />}
+              </div>
             </div>
 
-
-            <div className="image bg-[var(--primary--color)] hidden lg:flex justify-center items-center text-white ">
-                <img src={login_img} alt="" />
+            <div className="grid grid-cols-1 gap-1">
+              <RuleLine ok={rules.length} text="At least 8 characters" />
+              <RuleLine ok={rules.uppercase} text="One uppercase letter" />
+              <RuleLine ok={rules.lowercase} text="One lowercase letter" />
+              <RuleLine ok={rules.number} text="One number" />
+              <RuleLine ok={rules.special} text="One special character (!@#$...)" />
             </div>
+
+            <input name="phone" value={form.phone} onChange={handleChange} placeholder="Mobile number (10 digits)" className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#4169E1] outline-none" />
+
+            <button type="submit" className="w-full bg-[#4169E1] text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Continue</button>
+          </form>
+
+          <p className="text-center text-sm text-gray-500 mt-4">Already have an account? <Link to="/user/login" className="text-[#4169E1]">Log in</Link></p>
         </div>
-  )
-}
 
-export default UserSignIn
+        <div className="hidden lg:flex items-center justify-center bg-gradient-to-b from-[#4169E1] to-[#89A7FF]">
+          <img src={login_img} alt="illustration" className="max-w-[80%]" />
+        </div>
+      </div>
+    </div>
+  );
+}

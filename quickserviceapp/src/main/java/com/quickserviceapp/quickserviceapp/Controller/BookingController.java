@@ -1,17 +1,16 @@
 package com.quickserviceapp.quickserviceapp.Controller;
 
 import com.quickserviceapp.quickserviceapp.DTO.BookingDTO;
-import com.quickserviceapp.quickserviceapp.Entity.Booking;
-import com.quickserviceapp.quickserviceapp.Entity.Category;
-import com.quickserviceapp.quickserviceapp.Entity.ServiceProvider;
-import com.quickserviceapp.quickserviceapp.Entity.User;
+import com.quickserviceapp.quickserviceapp.DTO.BookingResponseDTO;
 import com.quickserviceapp.quickserviceapp.Service.BookingService;
+import com.stripe.exception.StripeException;
+import com.stripe.model.checkout.Session;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.util.Map;
 import java.util.List;
 
 @RestController
@@ -19,70 +18,64 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:5173")
 public class BookingController {
 
-    @Autowired
-    private BookingService bookingService;
+    @Autowired private BookingService bookingService;
 
-    // ✅ Create Booking
     @PostMapping("/create")
-    public ResponseEntity<?> createBooking(@RequestBody BookingDTO bookingDTO) {
+    public ResponseEntity<?> createBooking(@RequestBody BookingDTO dto) {
         try {
-            Booking booking = new Booking();
-
-            // Set User
-            User user = new User();
-            user.setId(bookingDTO.getUserId());
-            booking.setUser(user);
-
-            // Set Provider
-            ServiceProvider provider = new ServiceProvider();
-            provider.setId(bookingDTO.getProviderId());
-            booking.setProvider(provider);
-
-            // Set Service
-            Category service = new Category();
-            service.setId(bookingDTO.getServiceId());
-            booking.setService(service);
-
-            // Booking details
-            booking.setBookingDate(LocalDate.parse(bookingDTO.getBookingDate()));
-            booking.setBookingTime(LocalTime.parse(bookingDTO.getBookingTime()));
-            booking.setDescription(bookingDTO.getDescription());
-            booking.setStatus(Booking.Status.PENDING);
-
-            Booking saved = bookingService.saveBooking(booking);
-            return ResponseEntity.ok(saved);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500)
-                    .body("Error saving booking: " + e.getMessage());
+            var saved = bookingService.createBooking(dto);
+            var resp = bookingService.toResponseDTO(saved);
+            return ResponseEntity.ok(resp);
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", ex.getMessage()));
         }
     }
 
-    // ✅ Get bookings by User
+    @PutMapping("/provider/action/{bookingId}")
+    public ResponseEntity<?> providerAction(@PathVariable Integer bookingId, @RequestParam String action) {
+        try {
+            var updated = bookingService.updateBookingByProvider(bookingId, action);
+            return ResponseEntity.ok(bookingService.toResponseDTO(updated));
+        } catch (RuntimeException rex) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", rex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", ex.getMessage()));
+        }
+    }
+
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Booking>> getUserBookings(@PathVariable int userId) {
-        User user = new User();
-        user.setId(userId);
-        return ResponseEntity.ok(bookingService.getBookingsByUser(user));
+    public ResponseEntity<List<BookingResponseDTO>> getUserBookings(@PathVariable Integer userId) {
+        return ResponseEntity.ok(bookingService.getBookingsByUserIdDTO(userId));
     }
 
-    // ✅ Get bookings by Provider
     @GetMapping("/provider/{providerId}")
-    public ResponseEntity<List<Booking>> getProviderBookings(@PathVariable int providerId) {
-        ServiceProvider provider = new ServiceProvider();
-        provider.setId(providerId);
-        return ResponseEntity.ok(bookingService.getBookingsByProvider(provider));
+    public ResponseEntity<List<BookingResponseDTO>> getProviderBookings(@PathVariable Integer providerId) {
+        return ResponseEntity.ok(bookingService.getBookingsByProviderIdDTO(providerId));
     }
 
-    // ✅ Update booking status (Confirm / Cancel)
-    @PutMapping("/status/{id}")
-    public ResponseEntity<Booking> updateBookingStatus(
-            @PathVariable int id,
-            @RequestParam String status
-    ) {
-        Booking.Status newStatus = Booking.Status.valueOf(status.toUpperCase());
-        Booking updated = bookingService.updateStatus(id, newStatus);
-        return ResponseEntity.ok(updated);
+    // Create checkout session (optional - equivalent to /stripe/create-checkout-session)
+    @PostMapping("/create-checkout-session")
+    public ResponseEntity<?> createCheckoutSession(@RequestParam Integer bookingId) {
+        try {
+            Session session = bookingService.createCheckoutSessionForBooking(bookingId);
+            return ResponseEntity.ok(Map.of("url", session.getUrl(), "id", session.getId()));
+        } catch (StripeException se) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", se.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(400).body(Map.of("success", false, "message", ex.getMessage()));
+        }
+    }
+
+    @PutMapping("/update-payment")
+    public ResponseEntity<?> updatePaymentStatus(@RequestParam String sessionId,
+                                                 @RequestParam(required = false) String paymentId) {
+        try {
+            bookingService.markPaymentDoneFromStripeSession(sessionId, paymentId);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Payment recorded"));
+        } catch (RuntimeException rex) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", rex.getMessage()));
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", ex.getMessage()));
+        }
     }
 }
