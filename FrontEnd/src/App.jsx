@@ -19,6 +19,7 @@ import ServiceDashboard from "./ServiceProvider/ServiceDashboard"; // Corrected 
 import ServiceNotifications from "./ServiceProvider/ServiceNotifications";
 import ServiceBookingDetails from "./ServiceProvider/ServiceBookingDetails";
 import PaymentUpdate from "./UserPage/PaymentUpdate";
+import Admin from "./Admin";
 
 const router = createBrowserRouter([
   {
@@ -84,6 +85,10 @@ const router = createBrowserRouter([
   {
     path: "/service/ratings",
     element: <UserRatingPage />,
+  },
+  {
+    path: "/admin/panel",
+    element: <Admin />,
   },
   {
     path: "/payment-success",
