@@ -153,7 +153,7 @@ export const getBookingDetails = async (bookingId) => {
 // Update booking status
 export const updateBookingStatus = async (bookingId, status) => {
   try {
-    const res = await api.put(`/booking/update/${bookingId}`, { status });
+    const res = await api.put(`/booking/provider/action/${bookingId}?action=${status}`);
     return res.data;
   } catch (err) {
     console.error("Error updating booking status:", err);

@@ -3,6 +3,8 @@ import axios from "axios";
 import UserNavbar from "./UserNavbar";
 import { toast} from "react-hot-toast";
 import {getAppUser} from "../api";
+import { MessageCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 const UserBookingHistoryPage = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -110,22 +112,33 @@ const UserBookingHistoryPage = () => {
           </p>
         </div>
 
-        {showPayButton && (
-          <button
-            onClick={() => handlePayNow(b.bookingId)}
-            disabled={ b.status === "ACCEPTED" || b.status==="PENDING"}
-            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 w-full"
-          >
-            {payingBookingId === b.bookingId ? "Processing..." : "Pay Now"}
-          </button>
-        )}
-
-
-        {b.paymentDone && (
-          <div className="mt-2 bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-            <p className="text-green-600 font-semibold">✓ Payment Completed</p>
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <div>
+            {showPayButton && (
+              <button
+                onClick={() => handlePayNow(b.bookingId)}
+                disabled={ b.status === "ACCEPTED" || b.status==="PENDING"}
+                className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 w-full"
+              >
+                {payingBookingId === b.bookingId ? "Processing..." : "Pay Now"}
+              </button>
+            )}
+            {b.paymentDone && (
+              <div className="mt-2 bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                <p className="text-green-600 font-semibold">✓ Payment Completed</p>
+              </div>
+            )}
           </div>
-        )}
+          <div>
+            {b.status === "ACCEPTED" && (
+              <Link
+              className="mt-4 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition disabled:opacity-50 w-full flex items-center justify-center gap-2 shadow-md"
+              to={`/chat?bookingId=${b.bookingId}`}>
+              <MessageCircle size={20} />
+              CHAT HERE
+            </Link>)};
+          </div>
+        </div>
       </div>
     );
   };

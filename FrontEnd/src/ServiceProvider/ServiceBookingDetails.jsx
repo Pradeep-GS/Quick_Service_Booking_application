@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Phone, Calendar, Clock, MapPin, Check, X, CheckCircle } from "lucide-react";
 import ServiceNavbar from "./ServiceNavbar";
 import { toast, Toaster } from "react-hot-toast";
-
+import { Link } from "react-router-dom";
+import { MessageCircle } from "lucide-react";
 import { 
   getProviderBookings, 
   updateBookingStatus, 
@@ -33,13 +34,17 @@ export default function ServiceBookingDetails() {
     setActionLoading(prev => ({ ...prev, [bookingId]: action }));
     try {
       const updated = await updateBookingStatus(bookingId, action);
+      
+      // Use the response from backend to update state
       setBookings(prev =>
         prev.map(b => (b.bookingId === bookingId ? updated : b))
       );
-      toast.success(`Booking ${action.toLowerCase()}ed successfully!`);
+
+      const actionText = action === "ACCEPT" ? "accepted" : action === "COMPLETE" ? "completed" : "cancelled";
+      toast.success(`Booking ${actionText} successfully!`);
     } catch (err) {
       console.error(err);
-      toast.error(`Failed to ${action.toLowerCase()} booking`);
+      toast.error("Something went wrong");
     } finally {
       setActionLoading(prev => ({ ...prev, [bookingId]: null }));
     }
@@ -68,6 +73,7 @@ export default function ServiceBookingDetails() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <ServiceNavbar />
+      <Toaster position="top-center" />
       <div className="max-w-7xl mx-auto mt-24">
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
@@ -155,10 +161,11 @@ export default function ServiceBookingDetails() {
                     </span>
                   </div>
 
+                  {/* PENDING: Show Accept/Reject buttons */}
                   {isPending && (
                     <div className="flex gap-2">
                       <button
-                        onClick={() => handleAction(b.bookingId, "ACCEPTED")}
+                        onClick={() => handleAction(b.bookingId, "ACCEPT")}
                         disabled={!!isActionPending}
                         className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
@@ -167,7 +174,7 @@ export default function ServiceBookingDetails() {
                       </button>
 
                       <button
-                        onClick={() => handleAction(b.bookingId, "CANCELLED")}
+                        onClick={() => handleAction(b.bookingId, "CANCEL")}
                         disabled={!!isActionPending}
                         className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
@@ -177,23 +184,36 @@ export default function ServiceBookingDetails() {
                     </div>
                   )}
 
+                  {/* ACCEPTED: Show Complete button and Chat button */}
                   {isAccepted && (
-                    <button
-                      onClick={() => handleAction(b.bookingId, "COMPLETED")}
-                      disabled={!!isActionPending}
-                      className="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                      <CheckCircle size={18} />
-                      {isActionPending === "COMPLETE" ? "Completing..." : "Mark as Completed"}
-                    </button>
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => handleAction(b.bookingId, "COMPLETE")}
+                        disabled={!!isActionPending}
+                        className="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        <CheckCircle size={18} />
+                        {isActionPending === "COMPLETE" ? "Completing..." : "Mark as Completed"}
+                      </button>
+
+                      <Link
+                        className="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition w-full flex items-center justify-center gap-2 shadow-md"
+                        to={`/chat?bookingId=${b.bookingId}`}
+                      >
+                        <MessageCircle size={20} />
+                        CHAT HERE
+                      </Link>
+                    </div>
                   )}
 
+                  {/* COMPLETED: Show completed message */}
                   {isCompleted && (
                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 text-center">
                       <p className="text-sm text-purple-700 font-medium">✓ Work completed</p>
                     </div>
                   )}
 
+                  {/* CANCELLED: Show cancelled message */}
                   {isCancelled && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
                       <p className="text-sm text-red-700 font-medium">Booking Cancelled</p>

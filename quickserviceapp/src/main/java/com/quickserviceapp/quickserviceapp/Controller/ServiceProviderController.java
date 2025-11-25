@@ -13,7 +13,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/service")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5174")
 public class ServiceProviderController {
 
     @Autowired

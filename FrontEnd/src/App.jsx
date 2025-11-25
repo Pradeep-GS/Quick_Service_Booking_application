@@ -20,6 +20,7 @@ import ServiceNotifications from "./ServiceProvider/ServiceNotifications";
 import ServiceBookingDetails from "./ServiceProvider/ServiceBookingDetails";
 import PaymentUpdate from "./UserPage/PaymentUpdate";
 import Admin from "./Admin";
+import Chating from "./Chating";
 
 const router = createBrowserRouter([
   {
@@ -93,6 +94,10 @@ const router = createBrowserRouter([
   {
     path: "/payment-success",
     element: <PaymentUpdate />,
+  },
+  {
+    path: "/chat",
+    element: <Chating />,
   }
 ]);
 
