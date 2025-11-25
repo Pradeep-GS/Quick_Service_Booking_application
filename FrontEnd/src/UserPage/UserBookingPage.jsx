@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { toast, Toaster } from "react-hot-toast";
 import { motion } from "framer-motion";
+import {getAppUser} from "../api";
 import {
   MapPin,
   Star,
@@ -27,10 +28,10 @@ const UserBookingPage = () => {
 
   const [selectedServiceId, setSelectedServiceId] = useState(null);
 
-  const user = JSON.parse(localStorage.getItem("serviceUser"));
+  const user = getAppUser();
   const userId = user?.id;
-  const userName = user?.name || "";
-  const userMobile = user?.mobile || "";
+  const userName = user?.userName || "";
+  const userMobile = user?.mobileNumber || "";
   const userAddress = user?.address || "";
 
 

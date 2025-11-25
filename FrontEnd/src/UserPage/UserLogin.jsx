@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast, Toaster } from "react-hot-toast";
 import login_img from "../assets/login.png";
+import { setAppUser } from "../api";
 
 export default function UserLogin() {
   const [view, setView] = useState(true);
@@ -28,8 +29,7 @@ export default function UserLogin() {
       const res = response.data;
 
       if (res.success) {
-        // Save user details in localStorage for session
-        localStorage.setItem("serviceUser", JSON.stringify(res.user));
+        setAppUser(res.user);
 
         toast.success(res.message || "Login successful!", {
           position: "bottom-right",

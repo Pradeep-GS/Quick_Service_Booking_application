@@ -3,20 +3,14 @@ import { Phone, Calendar, Clock, MapPin, Check, X, CheckCircle } from "lucide-re
 import ServiceNavbar from "./ServiceNavbar";
 import { toast, Toaster } from "react-hot-toast";
 
-const getServiceUser = () => JSON.parse(localStorage.getItem("serviceUser"));
-const api = {
-  get: async (url) => {
-    const response = await fetch(`http://localhost:8080${url}`);
-    return { data: await response.json() };
-  },
-  put: async (url) => {
-    const response = await fetch(`http://localhost:8080${url}`, { method: 'PUT' });
-    return { data: await response.json() };
-  }
-};
+import { 
+  getProviderBookings, 
+  updateBookingStatus, 
+  getServiceProvider 
+} from "../api";
 
 export default function ServiceBookingDetails() {
-  const user = getServiceUser();
+  const user = getServiceProvider();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
@@ -25,8 +19,8 @@ export default function ServiceBookingDetails() {
   const fetchBookings = async () => {
     if (!user) return;
     try {
-      const res = await api.get(`/booking/provider/${user.id}`);
-      setBookings(res.data || []);
+      const data = await getProviderBookings(user.id);
+      setBookings(data || []);
     } catch (err) {
       console.error(err);
       alert("Failed to fetch bookings");
@@ -38,10 +32,10 @@ export default function ServiceBookingDetails() {
   const handleAction = async (bookingId, action) => {
     setActionLoading(prev => ({ ...prev, [bookingId]: action }));
     try {
-      const res = await api.put(`/booking/provider/action/${bookingId}?action=${action}`);
-      setBookings(prev => prev.map(b => 
-        b.bookingId === bookingId ? res.data : b
-      ));
+      const updated = await updateBookingStatus(bookingId, action);
+      setBookings(prev =>
+        prev.map(b => (b.bookingId === bookingId ? updated : b))
+      );
       toast.success(`Booking ${action.toLowerCase()}ed successfully!`);
     } catch (err) {
       console.error(err);
@@ -73,8 +67,9 @@ export default function ServiceBookingDetails() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <ServiceNavbar/>
+      <ServiceNavbar />
       <div className="max-w-7xl mx-auto mt-24">
+
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           {[
             { label: "All Orders", value: totalOrders, status: "All", color: "bg-blue-500" },
@@ -97,6 +92,7 @@ export default function ServiceBookingDetails() {
             </button>
           ))}
         </div>
+
         {filtered.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-md p-12 text-center">
             <p className="text-gray-500 text-lg">No bookings found for this filter.</p>
@@ -115,7 +111,6 @@ export default function ServiceBookingDetails() {
                   key={b.bookingId}
                   className="bg-white shadow-lg rounded-2xl border border-gray-200 p-6 hover:shadow-2xl transition-all"
                 >
-                  {/* Avatar */}
                   <div className="flex items-center mb-4">
                     <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-xl font-bold text-blue-600">
                       {b.userName?.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase() || "US"}
@@ -128,7 +123,6 @@ export default function ServiceBookingDetails() {
                     </div>
                   </div>
 
-                  {/* Details */}
                   <div className="space-y-2 mb-4">
                     <p className="flex items-center gap-2 text-gray-700">
                       <MapPin size={16} className="text-blue-500" />
@@ -150,7 +144,6 @@ export default function ServiceBookingDetails() {
                     </p>
                   </div>
 
-                  {/* Status Badge */}
                   <div className="mb-4">
                     <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
                       isPending ? "bg-yellow-100 text-yellow-700" :
@@ -162,19 +155,19 @@ export default function ServiceBookingDetails() {
                     </span>
                   </div>
 
-                  {/* Action Buttons */}
                   {isPending && (
                     <div className="flex gap-2">
                       <button
-                        onClick={() => handleAction(b.bookingId, "ACCEPT")}
+                        onClick={() => handleAction(b.bookingId, "ACCEPTED")}
                         disabled={!!isActionPending}
                         className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
                         <Check size={18} />
                         {isActionPending === "ACCEPT" ? "Accepting..." : "Accept"}
                       </button>
+
                       <button
-                        onClick={() => handleAction(b.bookingId, "CANCEL")}
+                        onClick={() => handleAction(b.bookingId, "CANCELLED")}
                         disabled={!!isActionPending}
                         className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                       >
@@ -186,7 +179,7 @@ export default function ServiceBookingDetails() {
 
                   {isAccepted && (
                     <button
-                      onClick={() => handleAction(b.bookingId, "COMPLETE")}
+                      onClick={() => handleAction(b.bookingId, "COMPLETED")}
                       disabled={!!isActionPending}
                       className="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
@@ -197,9 +190,7 @@ export default function ServiceBookingDetails() {
 
                   {isCompleted && (
                     <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 text-center">
-                      <p className="text-sm text-purple-700 font-medium">
-                        ✓ Work completed
-                      </p>
+                      <p className="text-sm text-purple-700 font-medium">✓ Work completed</p>
                     </div>
                   )}
 

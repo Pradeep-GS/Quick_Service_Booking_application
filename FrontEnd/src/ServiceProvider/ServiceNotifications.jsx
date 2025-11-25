@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import ServiceNavbar from "./ServiceNavbar";
-import { getServiceUser, getProviderBookings, updateBookingStatus } from "../api";
+import { getServiceProvider, getProviderBookings, updateBookingStatus } from "../api";
 import toast, { Toaster } from "react-hot-toast";
 import { Phone, Calendar, Clock, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 export default function ServiceNotifications() {
-  const user = getServiceUser();
+  const user = getServiceProvider();
   const [bookings, setBookings] = useState([]);
   const navigate = useNavigate();
 

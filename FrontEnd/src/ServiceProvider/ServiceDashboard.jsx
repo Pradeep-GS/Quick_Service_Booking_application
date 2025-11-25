@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import ServiceNavbar from "./ServiceNavbar";
-import { getServiceUser, api } from "../api";
+import { getServiceProvider, api } from "../api";
 import toast, { Toaster } from "react-hot-toast";
 import { Phone, Calendar, Clock, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function ServiceDashboard() {
-  const [user] = useState(() => getServiceUser());
+  const [user] = useState(() => getServiceProvider());
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -56,7 +56,7 @@ export default function ServiceDashboard() {
 
   useEffect(() => {
     fetchBookings();
-  }, [user?.id]); // Added proper dependency
+  }, [user?.id]);
 
   if (loading) {
     return (
@@ -149,5 +149,5 @@ export default function ServiceDashboard() {
         )}
       </div>
     </div>
-  )
+  );
 }

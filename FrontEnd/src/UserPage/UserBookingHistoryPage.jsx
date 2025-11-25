@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import UserNavbar from "./UserNavbar";
 import { toast} from "react-hot-toast";
+import {getAppUser} from "../api";
 const UserBookingHistoryPage = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [payingBookingId, setPayingBookingId] = useState(null);
 
-  const user = JSON.parse(localStorage.getItem("serviceUser"));
+  const user = getAppUser();
   const userId = user?.id;
 
   useEffect(() => {

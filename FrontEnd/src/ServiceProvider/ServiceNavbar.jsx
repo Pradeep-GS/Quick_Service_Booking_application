@@ -1,12 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
-import { getServiceUser, removeServiceUser } from "../api";
+import {  removeServiceProvider } from "../api";
 
 export default function ServiceNavbar() {
   const navigate = useNavigate();
-  const user = getServiceUser();
+  // const user = getServiceUser();
 
   const handleLogout = () => {
-    removeServiceUser();
+    removeServiceProvider();
     navigate("/service/login");
   };
 
