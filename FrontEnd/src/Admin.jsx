@@ -1,27 +1,23 @@
 import { useEffect, useState } from "react";
-import { Trash2, Search, PlusCircle, Users, Package, FolderOpen, BarChart3, AlertCircle, CheckCircle, X } from "lucide-react";
+import axios from "axios";
+import {
+  Trash2,
+  Search,
+  PlusCircle,
+  Users,
+  Package,
+  FolderOpen,
+  BarChart3,
+  AlertCircle,
+  CheckCircle,
+  X
+} from "lucide-react";
 
-// Axios-like wrapper for fetch
+// Axios API Wrapper
 const api = {
-  get: async (url) => {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    return { data: await res.json() };
-  },
-  post: async (url, data) => {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    return { data: await res.json() };
-  },
-  delete: async (url) => {
-    const res = await fetch(url, { method: "DELETE" });
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    return { data: await res.json() };
-  }
+  get: (url) => axios.get(url),
+  post: (url, data) => axios.post(url, data),
+  delete: (url) => axios.delete(url),
 };
 
 // Toast Component
@@ -31,14 +27,25 @@ const Toast = ({ message, type, onClose }) => {
     return () => clearTimeout(timer);
   }, [onClose]);
 
-  const bgColor = type === "success" ? "bg-green-500" : type === "error" ? "bg-red-500" : "bg-blue-500";
+  const bgColor =
+    type === "success"
+      ? "bg-green-500"
+      : type === "error"
+      ? "bg-red-500"
+      : "bg-blue-500";
+
   const Icon = type === "success" ? CheckCircle : AlertCircle;
 
   return (
-    <div className={`${bgColor} text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 min-w-80 animate-slide-in`}>
+    <div
+      className={`${bgColor} text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 min-w-80 animate-slide-in`}
+    >
       <Icon size={20} />
       <span className="flex-1">{message}</span>
-      <button onClick={onClose} className="hover:bg-white/20 rounded p-1 transition-colors">
+      <button
+        onClick={onClose}
+        className="hover:bg-white/20 rounded p-1 transition-colors"
+      >
         <X size={18} />
       </button>
     </div>
@@ -50,23 +57,25 @@ export default function Admin() {
   const [users, setUsers] = useState([]);
   const [providers, setProviders] = useState([]);
   const [categories, setCategories] = useState([]);
+
   const [searchUser, setSearchUser] = useState("");
   const [searchProvider, setSearchProvider] = useState("");
   const [searchCategory, setSearchCategory] = useState("");
+
   const [newCategory, setNewCategory] = useState("");
   const [toasts, setToasts] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const showToast = (message, type = "success") => {
     const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
+    setToasts((prev) => [...prev, { id, message, type }]);
   };
 
   const removeToast = (id) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Load all data
+  // ---------------- LOADING DATA ----------------
   const loadUsers = async () => {
     try {
       const res = await api.get("http://localhost:8080/admin/users");
@@ -104,7 +113,7 @@ export default function Admin() {
     loadAll();
   }, []);
 
-  // Delete user
+  // ---------------- DELETE ACTIONS ----------------
   const deleteUser = async (id) => {
     try {
       await api.delete(`http://localhost:8080/admin/user/${id}`);
@@ -115,7 +124,6 @@ export default function Admin() {
     }
   };
 
-  // Delete provider
   const deleteProvider = async (id) => {
     try {
       await api.delete(`http://localhost:8080/admin/provider/${id}`);
@@ -126,7 +134,6 @@ export default function Admin() {
     }
   };
 
-  // Delete category
   const deleteCategory = async (id) => {
     try {
       await api.delete(`http://localhost:8080/admin/category/${id}`);
@@ -137,16 +144,15 @@ export default function Admin() {
     }
   };
 
-  // Add category
+  // ---------------- ADD CATEGORY ----------------
   const addCategory = async () => {
     if (!newCategory.trim()) {
-      showToast("Category name cannot be empty", "error");
+      showToast("Category cannot be empty", "error");
       return;
     }
-
     try {
       await api.post("http://localhost:8080/admin/category", {
-        categoryName: newCategory
+        categoryName: newCategory,
       });
       showToast("Category created successfully");
       setNewCategory("");
@@ -156,6 +162,7 @@ export default function Admin() {
     }
   };
 
+  // ---------------- COMPONENTS ----------------
   const Section = ({ title, children }) => (
     <div className="p-8">
       <h2 className="text-3xl font-bold mb-6 text-gray-800">{title}</h2>
@@ -177,49 +184,48 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Toast Container */}
+      {/* Toasts */}
       <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
-        {toasts.map(toast => (
+        {toasts.map((t) => (
           <Toast
-            key={toast.id}
-            message={toast.message}
-            type={toast.type}
-            onClose={() => removeToast(toast.id)}
+            key={t.id}
+            message={t.message}
+            type={t.type}
+            onClose={() => removeToast(t.id)}
           />
         ))}
       </div>
 
       {/* Navbar */}
       <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="px-8 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
-            <div className="flex gap-2">
-              {[
-                { id: "dashboard", label: "Dashboard", icon: BarChart3 },
-                { id: "users", label: "Users", icon: Users },
-                { id: "providers", label: "Providers", icon: Package },
-                { id: "categories", label: "Categories", icon: FolderOpen }
-              ].map(({ id, label, icon: Icon }) => (
-                <button
-                  key={id}
-                  onClick={() => setTab(id)}
-                  className={`px-6 py-2.5 rounded-lg font-medium transition-all flex items-center gap-2 ${
-                    tab === id
-                      ? "bg-blue-600 text-white shadow-md"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  <Icon size={18} />
-                  {label}
-                </button>
-              ))}
-            </div>
+        <div className="px-8 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Admin Panel</h1>
+
+          <div className="flex gap-2">
+            {[
+              { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+              { id: "users", label: "Users", icon: Users },
+              { id: "providers", label: "Providers", icon: Package },
+              { id: "categories", label: "Categories", icon: FolderOpen },
+            ].map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setTab(id)}
+                className={`px-6 py-2.5 rounded-lg flex items-center gap-2 font-medium transition-all ${
+                  tab === id
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <Icon size={18} />
+                {label}
+              </button>
+            ))}
           </div>
         </div>
       </nav>
 
-      {/* Dashboard */}
+      {/* ---------------- Dashboard ---------------- */}
       {tab === "dashboard" && (
         <Section title="Dashboard Overview">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -245,41 +251,47 @@ export default function Admin() {
         </Section>
       )}
 
-      {/* Users */}
+      {/* ---------------- Users ---------------- */}
       {tab === "users" && (
         <Section title="User Management">
-          <div className="mb-6">
-            <div className="relative w-96">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Search users..."
-                value={searchUser}
-                onChange={(e) => setSearchUser(e.target.value)}
-              />
-            </div>
+          <div className="mb-6 relative w-96">
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+              size={20}
+            />
+            <input
+              className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl outline-none"
+              placeholder="Search users..."
+              value={searchUser}
+              onChange={(e) => setSearchUser(e.target.value)}
+            />
           </div>
 
           <div className="space-y-3">
             {users
-              .filter((u) => u.userName.toLowerCase().includes(searchUser.toLowerCase()))
+              .filter((u) =>
+                u.userName.toLowerCase().includes(searchUser.toLowerCase())
+              )
               .map((u) => (
-                <div key={u.id} className="bg-white p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex justify-between items-center">
+                <div
+                  key={u.id}
+                  className="bg-white p-5 rounded-xl shadow-sm border flex justify-between items-center"
+                >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
                       {u.userName.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">{u.userName}</p>
-                      <p className="text-sm text-gray-500">{u.mailID}</p>
+                      <p className="font-semibold">{u.userName}</p>
+                      <p className="text-gray-500 text-sm">{u.mailID}</p>
                     </div>
                   </div>
 
                   <button
                     onClick={() => deleteUser(u.id)}
-                    className="p-2.5 hover:bg-red-50 rounded-lg transition-colors group"
+                    className="p-2 hover:bg-red-50 rounded-lg"
                   >
-                    <Trash2 className="text-gray-400 group-hover:text-red-500 transition-colors" size={20} />
+                    <Trash2 className="text-red-500" />
                   </button>
                 </div>
               ))}
@@ -287,41 +299,44 @@ export default function Admin() {
         </Section>
       )}
 
-      {/* Providers */}
+      {/* ---------------- Providers ---------------- */}
       {tab === "providers" && (
         <Section title="Provider Management">
-          <div className="mb-6">
-            <div className="relative w-96">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Search providers..."
-                value={searchProvider}
-                onChange={(e) => setSearchProvider(e.target.value)}
-              />
-            </div>
+          <div className="mb-6 relative w-96">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              className="w-full pl-12 pr-4 py-3 bg-white border rounded-xl"
+              placeholder="Search providers..."
+              value={searchProvider}
+              onChange={(e) => setSearchProvider(e.target.value)}
+            />
           </div>
 
           <div className="space-y-3">
             {providers
-              .filter((p) => p.name.toLowerCase().includes(searchProvider.toLowerCase()))
+              .filter((p) =>
+                p.name.toLowerCase().includes(searchProvider.toLowerCase())
+              )
               .map((p) => (
-                <div key={p.id} className="bg-white p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex justify-between items-center">
+                <div
+                  key={p.id}
+                  className="bg-white p-5 rounded-xl shadow-sm border flex justify-between items-center"
+                >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                    <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
                       {p.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">{p.name}</p>
-                      <p className="text-sm text-gray-500">{p.email}</p>
+                      <p className="font-semibold">{p.name}</p>
+                      <p className="text-gray-500 text-sm">{p.email}</p>
                     </div>
                   </div>
 
                   <button
                     onClick={() => deleteProvider(p.id)}
-                    className="p-2.5 hover:bg-red-50 rounded-lg transition-colors group"
+                    className="p-2 hover:bg-red-50 rounded-lg"
                   >
-                    <Trash2 className="text-gray-400 group-hover:text-red-500 transition-colors" size={20} />
+                    <Trash2 className="text-red-500" />
                   </button>
                 </div>
               ))}
@@ -329,14 +344,15 @@ export default function Admin() {
         </Section>
       )}
 
-      {/* Categories */}
+      {/* ---------------- Categories ---------------- */}
       {tab === "categories" && (
         <Section title="Category Management">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6">
-            <h3 className="font-semibold text-gray-900 mb-4">Add New Category</h3>
+          {/* Add Category */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border mb-6">
+            <h3 className="font-semibold mb-3">Add New Category</h3>
             <div className="flex gap-3">
               <input
-                className="flex-1 px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                className="flex-1 px-4 py-3 border rounded-xl"
                 placeholder="Enter category name..."
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
@@ -344,65 +360,56 @@ export default function Admin() {
               />
               <button
                 onClick={addCategory}
-                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 font-medium transition-colors shadow-sm"
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl flex items-center gap-2"
               >
-                <PlusCircle size={20} />
-                Add Category
+                <PlusCircle />
+                Add
               </button>
             </div>
           </div>
 
-          <div className="mb-6">
-            <div className="relative w-96">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-              <input
-                className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Search categories..."
-                value={searchCategory}
-                onChange={(e) => setSearchCategory(e.target.value)}
-              />
-            </div>
+          {/* Search */}
+          <div className="mb-6 relative w-96">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              className="w-full pl-12 pr-4 py-3 bg-white border rounded-xl"
+              placeholder="Search categories..."
+              value={searchCategory}
+              onChange={(e) => setSearchCategory(e.target.value)}
+            />
           </div>
 
+          {/* Category List */}
           <div className="space-y-3">
             {categories
-              .filter((c) => c.categoryName.toLowerCase().includes(searchCategory.toLowerCase()))
+              .filter((c) =>
+                c.categoryName
+                  .toLowerCase()
+                  .includes(searchCategory.toLowerCase())
+              )
               .map((c) => (
-                <div key={c.id} className="bg-white p-5 rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex justify-between items-center">
+                <div
+                  key={c.id}
+                  className="bg-white p-5 rounded-xl shadow-sm border flex justify-between items-center"
+                >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
-                      <FolderOpen className="text-white" size={20} />
+                    <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
+                      <FolderOpen className="text-white" />
                     </div>
-                    <p className="font-semibold text-gray-900">{c.categoryName}</p>
+                    <p className="font-semibold">{c.categoryName}</p>
                   </div>
 
                   <button
                     onClick={() => deleteCategory(c.id)}
-                    className="p-2.5 hover:bg-red-50 rounded-lg transition-colors group"
+                    className="p-2 hover:bg-red-50 rounded-lg"
                   >
-                    <Trash2 className="text-gray-400 group-hover:text-red-500 transition-colors" size={20} />
+                    <Trash2 className="text-red-500" />
                   </button>
                 </div>
               ))}
           </div>
         </Section>
       )}
-
-      <style>{`
-        @keyframes slide-in {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-in {
-          animation: slide-in 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 }
