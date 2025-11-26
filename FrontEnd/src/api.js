@@ -53,7 +53,7 @@ export function setAppUserId(id) {
 }
 
 export function getAppUserId() {
-  return localStorage.getItem("appUserId");
+  return localStorage.getItem("id");
 }
 
 

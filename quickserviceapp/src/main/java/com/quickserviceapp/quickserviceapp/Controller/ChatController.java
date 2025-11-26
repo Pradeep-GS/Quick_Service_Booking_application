@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/chat")
-@CrossOrigin(origins = "http://localhost:5174")
+@CrossOrigin(origins = "*")
 public class ChatController {
 
     private final ChatService service;
@@ -51,13 +51,14 @@ public class ChatController {
 
     @MessageMapping("/chat.send")
     public void sendMessageStomp(@Payload ChatMessageDTO dto) {
-        // save
+
         ChatMessage msg = ChatMessage.builder()
                 .senderId(dto.getSenderId())
                 .receiverId(dto.getReceiverId())
                 .senderType(ChatMessage.SenderType.valueOf(dto.getSenderType()))
                 .message(dto.getMessage())
                 .build();
+
         ChatMessage saved = service.saveMessage(msg);
 
         ChatMessageDTO out = ChatMessageDTO.builder()
@@ -68,10 +69,14 @@ public class ChatController {
                 .message(saved.getMessage())
                 .timestamp(saved.getTimestamp().toString())
                 .build();
-        messagingTemplate.convertAndSend("/topic/private." + dto.getReceiverId(), out);
 
-        messagingTemplate.convertAndSend("/topic/private." + dto.getSenderId(), out);
+        // send to receiver
+        messagingTemplate.convertAndSend("/topic/chat." + dto.getReceiverId(), out);
+
+        // send to sender (to update UI)
+        messagingTemplate.convertAndSend("/topic/chat." + dto.getSenderId(), out);
     }
+
 
     @GetMapping("/history")
     public ResponseEntity<List<ChatMessageDTO>> getHistory(

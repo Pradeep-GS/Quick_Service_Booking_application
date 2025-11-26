@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { getAppUserId } from "../api";
+import { setAppUserId } from "../api";
 import { toast, Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 export default function UserProfileUpdate() {
   const navigate = useNavigate();
-  const storedId = getAppUserId();
+  const storedId = setAppUserId();
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(null);
 
