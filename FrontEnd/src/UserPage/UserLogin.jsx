@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast, Toaster } from "react-hot-toast";
 import login_img from "../assets/login.png";
-import { setAppUser } from "../api";
+import { setAppUser , setAppUserId} from "../api";
 
 export default function UserLogin() {
   const [view, setView] = useState(true);
@@ -30,7 +30,7 @@ export default function UserLogin() {
 
       if (res.success) {
         setAppUser(res.user);
-
+        setAppUserId(res.user.id.toString());
         toast.success(res.message || "Login successful!", {
           position: "bottom-right",
           style: {

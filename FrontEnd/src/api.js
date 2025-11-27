@@ -29,7 +29,6 @@ export function getServiceProviderId() {
   return localStorage.getItem("serviceProviderId");
 }
 
-
 // USER STORAGE (NORMAL USER)
 export function setAppUser(obj) {
   localStorage.setItem("appUser", JSON.stringify(obj));
@@ -53,10 +52,8 @@ export function setAppUserId(id) {
 }
 
 export function getAppUserId() {
-  return localStorage.getItem("id");
+  return localStorage.getItem("appUserId");
 }
-
-
 
 // ---------------- Axios Instance ----------------
 export const api = axios.create({
