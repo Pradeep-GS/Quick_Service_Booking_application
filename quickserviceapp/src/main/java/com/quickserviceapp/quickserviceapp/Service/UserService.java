@@ -79,11 +79,27 @@ public class UserService {
     public Map<String, Object> login(UserLogInDto dto) {
         Map<String, Object> res = new HashMap<>();
         String mail = dto.getMailID() != null ? dto.getMailID().trim() : null;
-        if (mail == null) { res.put("success", false); res.put("message", "mailID required"); return res; }
+
+        if (mail == null) 
+        { 
+            res.put("success", false); res.put("message", "mailID required"); return res; 
+        }
         Optional<User> userOpt = userRepository.findByMailID(mail);
-        if (userOpt.isEmpty()) { res.put("success", false); res.put("message", "No user found with this email"); return res; }
+
+        if (userOpt.isEmpty()) 
+        { 
+            res.put("success", false); 
+            res.put("message", "No user found with this email"); return res; 
+
+        }
         User user = userOpt.get();
-        if (!user.getPassword().equals(dto.getPassword())) { res.put("success", false); res.put("message", "Invalid password"); return res; }
+
+        if (!user.getPassword().equals(dto.getPassword()))
+        {
+            res.put("success", false);
+            res.put("message", "Invalid password"); 
+            return res;
+        }
         user.setPassword(null);
         res.put("success", true);
         res.put("message", "Successfully Login");

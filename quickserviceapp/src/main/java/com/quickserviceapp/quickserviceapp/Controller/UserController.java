@@ -4,6 +4,7 @@ import com.quickserviceapp.quickserviceapp.DTO.UserDto;
 import com.quickserviceapp.quickserviceapp.DTO.UserLogInDto;
 import com.quickserviceapp.quickserviceapp.DTO.UserSignInDTO;
 import com.quickserviceapp.quickserviceapp.Entity.User;
+import com.quickserviceapp.quickserviceapp.Service.EmailService;
 import com.quickserviceapp.quickserviceapp.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,6 +23,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/search")
     public ResponseEntity<Map<String, Object>> checkExisting(@RequestBody UserSignInDTO dto) {
@@ -83,6 +86,15 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody UserLogInDto dto) {
         Map<String, Object> result = userService.login(dto);
+        if(Boolean.TRUE.equals(result.get("success"))) 
+        {
+            User user = (User) result.get("user");
+            if(user != null) {
+                String to = user.getMailID();
+                String name = user.getUserName();
+                emailService.LoginFunction(to,name);
+            }
+        }
         return ResponseEntity.ok(result);
     }
 
@@ -100,6 +112,15 @@ public class UserController {
     @PutMapping("/update/{id}")
     public ResponseEntity<Map<String, Object>> updateUser(@PathVariable int id, @RequestBody UserDto dto) {
         Map<String, Object> result = userService.updateUser(id, dto);
+        if(Boolean.TRUE.equals(result.get("success")))
+        {
+            User user = (User) result.get("user");
+            if(user != null) {
+                String to = user.getMailID();
+                String name = user.getUserName();
+                emailService.ProfileUpdateFunction(to,name);
+            }
+        }
         return ResponseEntity.ok(result);
     }
 }
