@@ -3,7 +3,6 @@ import {  removeServiceProvider } from "../api";
 
 export default function ServiceNavbar() {
   const navigate = useNavigate();
-  // const user = getServiceUser();
 
   const handleLogout = () => {
     removeServiceProvider();
@@ -17,7 +16,7 @@ export default function ServiceNavbar() {
         <div className="space-x-6 text-gray-700 font-medium">
           <Link to="/service/dashboard" className="hover:text-[#4169E1] transition">Home</Link>
           <Link to="/service/history" className="hover:text-[#4169E1] transition">History of My Booking</Link>
-          <Link to="/service/notifications" className="hover:text-[#4169E1] transition">Notification</Link>
+          <Link to="/service/myratings" className="hover:text-[#4169E1] transition">My Ratings</Link>
           <Link to="/" className="text-red-500 hover:text-red-600 transition">Logout</Link>
         </div>
       </div>

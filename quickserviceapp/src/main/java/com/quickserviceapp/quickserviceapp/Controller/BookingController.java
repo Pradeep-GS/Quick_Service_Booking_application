@@ -2,7 +2,9 @@ package com.quickserviceapp.quickserviceapp.Controller;
 
 import com.quickserviceapp.quickserviceapp.DTO.BookingDTO;
 import com.quickserviceapp.quickserviceapp.DTO.BookingResponseDTO;
+import com.quickserviceapp.quickserviceapp.Entity.User;
 import com.quickserviceapp.quickserviceapp.Service.BookingService;
+import com.quickserviceapp.quickserviceapp.Service.EmailService;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
 
@@ -17,7 +19,7 @@ import java.util.List;
 @RequestMapping("/booking")
 @CrossOrigin(origins = "*")
 public class BookingController {
-
+    @Autowired EmailService emailService;
     @Autowired private BookingService bookingService;
 
     @PostMapping("/create")

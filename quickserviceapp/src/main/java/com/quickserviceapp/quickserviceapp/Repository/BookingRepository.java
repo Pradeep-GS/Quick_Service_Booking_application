@@ -20,7 +20,6 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
     // Counts for dashboard
     long countByProvider_Id(Integer providerId);
     long countByProvider_IdAndStatus(Integer providerId, Booking.Status status);
-
-    // Find booking by the temporary session id or final payment id
     Optional<Booking> findByPaymentId(String paymentId);
+    
 }

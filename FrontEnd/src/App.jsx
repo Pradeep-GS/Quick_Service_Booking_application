@@ -16,11 +16,11 @@ import ServiceSignin from "./ServiceProvider/ServiceSignin";
 import ServiceProfilesetup from "./ServiceProvider/ServiceProfilesetup";
 import ServiceProfileUpdate from "./ServiceProvider/ServiceProfileUpdate";
 import ServiceDashboard from "./ServiceProvider/ServiceDashboard"; // Corrected import
-import ServiceNotifications from "./ServiceProvider/ServiceNotifications";
 import ServiceBookingDetails from "./ServiceProvider/ServiceBookingDetails";
 import PaymentUpdate from "./UserPage/PaymentUpdate";
 import Admin from "./Admin";
 import Chating from "./Chating";
+import ServiceRating from "./ServiceProvider/ServiceRating";
 
 const router = createBrowserRouter([
   {
@@ -73,19 +73,19 @@ const router = createBrowserRouter([
   },
   {
     path: "/service/history",
-    element: <ServiceBookingDetails />, // Updated to match actual file
+    element: <ServiceBookingDetails />,
   },
   {
     path: "/service/profileupdate",
     element: <ServiceProfileUpdate />,
   },
   {
-    path: "/service/notifications",
-    element: <ServiceNotifications />,
+    path: "/rate/:bookingId",
+    element: <UserRatingPage />,
   },
   {
-    path: "/service/ratings",
-    element: <UserRatingPage />,
+    path: "/service/myratings",
+    element:<ServiceRating/>
   },
   {
     path: "/admin/panel",

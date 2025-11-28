@@ -7,8 +7,22 @@ const PaymentUpdate = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
+  const [emailSent, setEmailSent] = useState(false);
 
   const sessionId = searchParams.get("session_id");
+
+  // Function to send rating email
+  const sendRatingEmail = async () => {
+    try {
+      await axios.post("http://localhost:8080/rating/send-email/session", null, {
+        params: { sessionId }
+      });
+      setEmailSent(true);
+      console.log("Rating email sent successfully");
+    } catch (error) {
+      console.error("Failed to send rating email:", error);
+    }
+  };
 
   useEffect(() => {
     if (!sessionId) {
@@ -19,10 +33,13 @@ const PaymentUpdate = () => {
 
     const markPayment = async () => {
       try {
-        // Calling corrected backend API
+        // Step 1: Update payment status
         await axios.put("http://localhost:8080/booking/update-payment", null, {
           params: { sessionId },
         });
+
+        // Step 2: Send rating email
+        await sendRatingEmail();
 
         setLoading(false);
 
@@ -31,7 +48,6 @@ const PaymentUpdate = () => {
         }, 3000);
       } catch (err) {
         console.error("Payment verification failed:", err);
-
         alert("Payment verification failed. Please contact support.");
         navigate("/user/dashboard");
       }
@@ -84,14 +100,34 @@ const PaymentUpdate = () => {
         </motion.h2>
 
         {!loading ? (
-          <motion.p
-            className="text-gray-500 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            Redirecting to your dashboard...
-          </motion.p>
+          <>
+            <motion.p
+              className="text-gray-500 text-center mb-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              Thank you for your payment!
+            </motion.p>
+            <motion.p
+              className="text-green-600 text-center text-sm"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.6 }}
+            >
+              {emailSent 
+                ? "✓ Rating request sent to your email" 
+                : "Sending rating request..."}
+            </motion.p>
+            <motion.p
+              className="text-gray-400 text-center text-sm mt-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.9 }}
+            >
+              Redirecting to dashboard...
+            </motion.p>
+          </>
         ) : (
           <p className="text-gray-500 text-center">Please wait while we verify your payment.</p>
         )}

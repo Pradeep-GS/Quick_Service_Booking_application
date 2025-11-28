@@ -12,21 +12,24 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Rating {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
     @Column(name = "user_id", nullable = false)
-    private int userId;
+    private Integer userId;
 
     @Column(name = "provider_id", nullable = false)
-    private int providerId;
+    private Integer providerId;
 
     @Column(name = "booking_id")
     private Integer bookingId;
 
-    private int ratingValue;
+    @Column(name = "rating_value", nullable = false)
+    private Integer ratingValue;
+
     private String comments;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 }

@@ -39,4 +39,20 @@ public class EmailService {
         mail.setFrom("quickserbooking@gmail.com");
         mailSender.send(mail);
     }
+
+    public void BookingConfirmationFunction(String toaddressString , String name , String bookingDetails) {
+        String subject = "Booking Confirmation";
+        String message = "Dear " + name + ",\n\n" +
+                            "Thank you for your booking with Quick Service Booking. Here are your booking details:\n\n" +
+                            bookingDetails + "\n\n" +
+                            "We look forward to serving you!\n\n" +
+                            "Best regards,\n" +
+                            "Quick Service Booking Team";
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setTo(toaddressString);
+        mail.setSubject(subject);
+        mail.setText(message);
+        mail.setFrom("quickserbooking@gmail.com");
+        mailSender.send(mail);
+    }
 }
