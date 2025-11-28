@@ -156,8 +156,9 @@ VALUES
 (3, 4, 6, 'User3', 'Address3', '9000000103', '2025-11-07', '12:00:00', 'Deep cleaning service', 'ACCEPTED', 40000),
 (4, 5, 3, 'User4', 'Address4', '9000000104', '2025-11-06', '10:45:00', 'Painting service', 'ACCEPTED', 28000);
 SELECT * FROM booking;
+select * from rating;
 SELECT * FROM users;
 SELECT * FROM service_category;
 SELECT * FROM  service_provider;
 SELECT * FROM chat_message;
- -- DROP DATABASE QuickServiceDB;
+  -- DROP DATABASE QuickServiceDB;
