@@ -132,11 +132,11 @@ const UserBookingHistoryPage = () => {
           <div>
             {b.status === "ACCEPTED" && (
               <Link
-              className="mt-4 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition disabled:opacity-50 w-full flex items-center justify-center gap-2 shadow-md"
-              to={`/chat?bookingId=${b.bookingId}`}>
-              <MessageCircle size={20} />
-              CHAT HERE
-            </Link>)};
+                className="mt-4 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition disabled:opacity-50 w-full flex items-center justify-center gap-2 shadow-md"
+                to="/user-chat">
+                <MessageCircle size={20} />
+                CHAT HERE
+              </Link>)};
           </div>
         </div>
       </div>

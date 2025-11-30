@@ -19,8 +19,9 @@ import ServiceDashboard from "./ServiceProvider/ServiceDashboard"; // Corrected 
 import ServiceBookingDetails from "./ServiceProvider/ServiceBookingDetails";
 import PaymentUpdate from "./UserPage/PaymentUpdate";
 import Admin from "./Admin";
-import Chating from "./Chating";
 import ServiceRating from "./ServiceProvider/ServiceRating";
+import UserChat from "./UserChat";
+import ProviderChat from "./ProviderChat";
 
 const router = createBrowserRouter([
   {
@@ -95,10 +96,12 @@ const router = createBrowserRouter([
     path: "/payment-success",
     element: <PaymentUpdate />,
   },
-  {
-    path: "/chat",
-    element: <Chating />,
-  }
+  {path:"/user-chat",
+    element:<UserChat/>
+  },
+  {path:"/provider-chat",
+    element:<ProviderChat/>
+  },
 ]);
 
 const App = () => {

@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Send, User, Briefcase, CheckCheck } from "lucide-react";
+import { getAppUserId, getServiceProviderId, getAppUser, getServiceProvider } from "./api";
 
-export default function Chating() {
+export default function UserChat() {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [isConnected, setIsConnected] = useState(false);
@@ -12,33 +13,37 @@ export default function Chating() {
 
   useEffect(() => {
     const initializeChatData = () => {
-      const appUserId = localStorage.getItem("appUserId");
-      const serviceProviderId = localStorage.getItem("serviceProviderId");
+      const appUserId = getAppUserId();
+      const serviceProviderId = getServiceProviderId();
+      const appUser = getAppUser();
+      const serviceProvider = getServiceProvider();
       
-      console.log("Stored IDs:", { appUserId, serviceProviderId });
+      console.log("🔍 UserChat - AppUserId:", appUserId, "ServiceProviderId:", serviceProviderId);
 
-      let senderId, senderType, receiverId, receiverType;
-
-      if (appUserId) {
-        senderId = parseInt(appUserId);
-        senderType = "USER";
-        receiverId = parseInt(localStorage.getItem("chatReceiverId")) || 2;
-        receiverType = "PROVIDER";
-      } else if (serviceProviderId) {
-        senderId = parseInt(serviceProviderId);
-        senderType = "PROVIDER";
-        receiverId = parseInt(localStorage.getItem("chatReceiverId")) || 1;
-        receiverType = "USER";
+      if (!appUserId) {
+        console.error("❌ No user found - UserChat requires a logged in user");
+        return;
       }
-      setCurrentUser({ id: senderId, type: senderType });
-      setReceiver({ id: receiverId, type: receiverType });
 
-      console.log("Chat initialized:", {
-        currentUser: { id: senderId, type: senderType },
-        receiver: { id: receiverId, type: receiverType }
+      const current = { 
+        id: parseInt(appUserId), 
+        type: "USER",
+        name: appUser?.userName || "Customer"
+      };
+      
+      const receiver = { 
+        id: parseInt(serviceProviderId),
+        type: "PROVIDER",
+        name: serviceProvider?.name || "Service Provider"
+      };
+      
+      setCurrentUser(current);
+      setReceiver(receiver);
+
+      console.log("💬 UserChat initialized:", {
+        currentUser: current,
+        receiver: receiver
       });
-
-      return { senderId, senderType, receiverId, receiverType };
     };
 
     initializeChatData();
@@ -59,15 +64,34 @@ export default function Chating() {
           debug: (str) => console.log("STOMP:", str),
           heartbeatIncoming: 4000,
           heartbeatOutgoing: 4000,
+          connectionTimeout: 5000,
         });
 
         stomp.onConnect = (frame) => {
-          console.log("✅ Connected to WebSocket successfully");
+          console.log("✅ UserChat connected to WebSocket successfully");
           setIsConnected(true);
+          
+          // Subscribe to current user's messages
           const subscription = stomp.subscribe(`/topic/chat.${currentUser.id}`, (msg) => {
-            console.log("📨 Received message:", msg.body);
-            try {
-              const data = JSON.parse(msg.body);
+            console.log("📨 UserChat received message:", msg.body);
+            handleIncomingMessage(msg.body);
+          });
+          
+          console.log(`📡 UserChat subscribed to: /topic/chat.${currentUser.id}`);
+          loadChatHistory();
+        };
+
+        const handleIncomingMessage = (messageBody) => {
+          try {
+            const data = JSON.parse(messageBody);
+            console.log("📩 UserChat processing message:", data);
+            
+            // Only add messages that are relevant to this conversation
+            const isRelevantMessage = 
+              (data.senderId === currentUser.id && data.receiverId === receiver.id) ||
+              (data.senderId === receiver.id && data.receiverId === currentUser.id);
+            
+            if (isRelevantMessage) {
               setMessages((prev) => {
                 const isDuplicate = prev.some(m => 
                   m.id === data.id || 
@@ -78,31 +102,32 @@ export default function Chating() {
                 );
                 
                 if (!isDuplicate) {
+                  console.log("✅ UserChat adding new message to state");
                   return [...prev, data];
                 }
                 return prev;
               });
-            } catch (error) {
-              console.error("❌ Error parsing message:", error);
+            } else {
+              console.log("🚫 UserChat ignoring irrelevant message");
             }
-          });
-          console.log(`📡 Subscribed to: /topic/chat.${currentUser.id}`);
-          loadChatHistory();
+          } catch (error) {
+            console.error("❌ UserChat error parsing message:", error);
+          }
         };
 
         stomp.onStompError = (frame) => {
-          console.error("❌ STOMP Error:", frame.headers["message"]);
+          console.error("❌ UserChat STOMP Error:", frame.headers["message"]);
           console.error("Error details:", frame.body);
           setIsConnected(false);
         };
 
         stomp.onWebSocketError = (error) => {
-          console.error("❌ WebSocket error:", error);
+          console.error("❌ UserChat WebSocket error:", error);
           setIsConnected(false);
         };
 
         stomp.onDisconnect = () => {
-          console.log("🔌 Disconnected from WebSocket");
+          console.log("🔌 UserChat disconnected from WebSocket");
           setIsConnected(false);
         };
 
@@ -110,7 +135,7 @@ export default function Chating() {
         stompClientRef.current = stomp;
 
       } catch (error) {
-        console.error("❌ WebSocket initialization error:", error);
+        console.error("❌ UserChat WebSocket initialization error:", error);
         setIsConnected(false);
       }
     };
@@ -119,43 +144,41 @@ export default function Chating() {
       if (!currentUser || !receiver) return;
 
       try {
-        console.log("📖 Loading chat history...");
-        let userId, providerId;
-        if (currentUser.type === "USER") {
-          userId = currentUser.id;
-          providerId = receiver.id;
-        } else {
-          userId = receiver.id;
-          providerId = currentUser.id;
-        }
-
-        console.log("Fetching history with:", { userId, providerId });
-
+        console.log("📖 UserChat loading chat history...");
+        
+        // Correct parameter order: userId should be the user, providerId should be the provider
         const response = await fetch(
-          `http://localhost:8080/chat/history?userId=${userId}&providerId=${providerId}`
+          `http://localhost:8080/chat/history?userId=${currentUser.id}&providerId=${receiver.id}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
         );
         
         if (response.ok) {
           const history = await response.json();
-          console.log("✅ Chat history loaded:", history);
+          console.log("✅ UserChat history loaded:", history.length, "messages");
+          
           const sortedHistory = (history || []).sort((a, b) => 
             new Date(a.timestamp) - new Date(b.timestamp)
           );
           
           setMessages(sortedHistory);
         } else {
-          console.error("❌ Failed to load chat history:", response.status);
+          console.error("❌ UserChat failed to load chat history:", response.status);
         }
       } catch (error) {
-        console.error("❌ Error loading chat history:", error);
+        console.error("❌ UserChat error loading chat history:", error);
       }
     };
-    loadChatHistory();
+
     initWebSocket();
 
     return () => {
       if (stompClientRef.current) {
-        console.log("🧹 Cleaning up WebSocket connection");
+        console.log("🧹 UserChat cleaning up WebSocket connection");
         stompClientRef.current.deactivate();
       }
     };
@@ -167,11 +190,11 @@ export default function Chating() {
 
   const sendMessage = () => {
     if (!inputMessage.trim() || !currentUser || !receiver) {
-      console.warn("Cannot send message: missing data");
+      console.warn("❌ UserChat cannot send message: missing data");
       return;
     }
     if (!stompClientRef.current || !stompClientRef.current.connected) {
-      console.warn("STOMP is not connected yet!");
+      console.warn("❌ UserChat STOMP is not connected yet!");
       return;
     }
 
@@ -184,18 +207,27 @@ export default function Chating() {
       timestamp: new Date().toISOString(),
     };
 
-    console.log("📤 Sending message:", msgObj);
+    console.log("📤 UserChat sending message:", msgObj);
 
     try {
+      // Add optimistic update
+      const optimisticMessage = {
+        ...msgObj,
+        id: Date.now() // Temporary ID
+      };
+      setMessages(prev => [...prev, optimisticMessage]);
+      setInputMessage("");
+
       stompClientRef.current.publish({
         destination: "/app/chat.send",
         body: JSON.stringify(msgObj),
       });
 
-      console.log("✅ Message sent successfully");
-      setInputMessage("");
+      console.log("✅ UserChat message sent successfully");
+
     } catch (error) {
-      console.error("❌ Failed to send message:", error);
+      console.error("❌ UserChat failed to send message:", error);
+      setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id));
     }
   };
 
@@ -232,6 +264,12 @@ export default function Chating() {
     }
   };
 
+  // Clear chat history
+  const clearChat = () => {
+    setMessages([]);
+    console.log("🗑️ UserChat history cleared");
+  };
+
   // Group messages by date
   const groupMessagesByDate = () => {
     const groups = {};
@@ -252,7 +290,7 @@ export default function Chating() {
       <div className="flex items-center justify-center h-screen bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4169E1] mx-auto mb-4"></div>
-          <p className="text-gray-600">Initializing chat...</p>
+          <p className="text-gray-600">Initializing User Chat...</p>
         </div>
       </div>
     );
@@ -265,15 +303,11 @@ export default function Chating() {
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-[#4169E1] rounded-full flex items-center justify-center shadow-md">
-              {currentUser.type === "USER" ? (
-                <User className="w-5 h-5 text-white" />
-              ) : (
-                <Briefcase className="w-5 h-5 text-white" />
-              )}
+              <Briefcase className="w-5 h-5 text-white" />
             </div>
             <div>
               <h2 className="font-semibold text-gray-800 text-lg">
-                {currentUser.type === "USER" ? "Service Provider" : "Customer"}
+                Service Provider
               </h2>
               <p className="text-xs text-gray-500 mt-1">
                 {isConnected ? (
@@ -289,6 +323,22 @@ export default function Chating() {
                 )}
               </p>
             </div>
+          </div>
+          
+          {/* Debug info and controls */}
+          <div className="flex items-center gap-4">
+            <div className="text-xs text-gray-500 text-right">
+              <div>You: <strong>USER</strong> (ID: {currentUser?.id})</div>
+              <div>With: PROVIDER (ID: {receiver?.id})</div>
+              <div>Messages: {messages.length}</div>
+            </div>
+            <button
+              onClick={clearChat}
+              className="px-3 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+              title="Clear chat history"
+            >
+              Clear
+            </button>
           </div>
         </div>
       </div>
@@ -323,6 +373,7 @@ export default function Chating() {
                 {/* Messages for this date */}
                 {dayMessages.map((msg, i) => {
                   const isSender = msg.senderId === currentUser.id && msg.senderType === currentUser.type;
+                  
                   return (
                     <div
                       key={msg.id || i}
@@ -339,7 +390,9 @@ export default function Chating() {
                             className={`w-8 h-8 rounded-full flex items-center justify-center ${
                               isSender
                                 ? "bg-[#4169E1]"
-                                : "bg-gray-400"
+                                : msg.senderType === "USER" 
+                                  ? "bg-green-500" 
+                                  : "bg-orange-500"
                             }`}
                           >
                             {msg.senderType === "USER" ? (
@@ -356,6 +409,13 @@ export default function Chating() {
                             isSender ? "items-end" : "items-start"
                           }`}
                         >
+                          {/* Sender name for received messages */}
+                          {!isSender && (
+                            <div className="text-xs text-gray-500 mb-1 px-1">
+                              {msg.senderType === "USER" ? "Customer" : "Service Provider"}
+                            </div>
+                          )}
+                          
                           <div
                             className={`px-4 py-2 rounded-2xl ${
                               isSender
@@ -408,7 +468,7 @@ export default function Chating() {
                 onKeyDown={handleKeyPress}
                 placeholder={
                   isConnected 
-                    ? "Type a message... (Press Enter to send)" 
+                    ? "Type a message as Customer... (Press Enter to send)" 
                     : "Connecting to chat..."
                 }
                 disabled={!isConnected}
@@ -430,7 +490,7 @@ export default function Chating() {
           <div className="mt-2 text-center">
             <p className="text-xs text-gray-500">
               {isConnected 
-                ? `✅ Connected` 
+                ? `✅ Connected as Customer` 
                 : "🔄 Connecting to chat service..."}
             </p>
           </div>
